@@ -24,9 +24,9 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
     
     List<Payment> findByPaymentStatus(PaymentStatus status);
     
-    List<Payment> findByOrder_Customer_CustomerId(Long customerId);
+    List<Payment> findByOrderCustomerCustomerId(Long customerId);
     
-    List<Payment> findByOrder_OrderId(Long orderId);
+    List<Payment> findByOrderOrderId(Long orderId);
     
     boolean existsByTransactionRef(String transactionRef);
     
@@ -39,6 +39,14 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
     
     @Query("SELECT p FROM Payment p WHERE p.createdAt >= :dateTime")
     List<Payment> findPaymentsAfter(@Param("dateTime") LocalDateTime dateTime);
+    
+    @Query("SELECT p FROM Payment p WHERE p.createdAt BETWEEN :startDate AND :endDate")
+    List<Payment> findByPaymentDateBetween(@Param("startDate") LocalDateTime startDate, 
+                                           @Param("endDate") LocalDateTime endDate);
+    
+    @Query("SELECT SUM(p.order.totalAmount) FROM Payment p WHERE p.paymentStatus = 'SUCCESS' AND p.createdAt BETWEEN :startDate AND :endDate")
+    double getTotalRevenueByDateRange(@Param("startDate") LocalDateTime startDate, 
+                                      @Param("endDate") LocalDateTime endDate);
     
     @Query("SELECT p FROM Payment p ORDER BY p.createdAt DESC")
     List<Payment> findLatestPayments();

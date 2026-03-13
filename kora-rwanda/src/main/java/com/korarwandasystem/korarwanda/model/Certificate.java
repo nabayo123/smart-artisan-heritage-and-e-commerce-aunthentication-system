@@ -1,128 +1,79 @@
 package com.korarwandasystem.korarwanda.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "CERTIFICATE")
+@Table(name = "certificates")
 public class Certificate {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "certificate_id")
-    private Long certificateId;
+    private Long id;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id", unique = true, nullable = false)
-    private Product product;
+    @Column(name = "certificate_number", unique = true, nullable = false)
+    @JsonProperty("certificate_number")
+    private String certificateNumber;
 
-    @Column(name = "heritage_hash", unique = true, nullable = false, length = 255)
-    @NotBlank(message = "Heritage hash is required")
-    private String heritageHash;
-
-    @Column(name = "qr_code_data", columnDefinition = "TEXT")
-    private String qrCodeData;
+    @Column(name = "issuing_authority")
+    @JsonProperty("issuing_authority")
+    private String issuingAuthority;
 
     @Column(name = "issue_date")
+    @JsonProperty("issue_date")
     private LocalDate issueDate;
 
+    @Column(name = "expiry_date")
+    @JsonProperty("expiry_date")
+    private LocalDate expiryDate;
+
+    @Column(name = "heritage_description", columnDefinition = "TEXT")
+    @JsonProperty("heritage_description")
+    private String heritageDescription;
+
     @Enumerated(EnumType.STRING)
-    @Column(name = "verification_status")
-    private CertificateStatus verificationStatus = CertificateStatus.VALID;
+    private CertificateStatus status;
 
-    @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "artisan_id")
+    @JsonProperty("artisan_id")
+    private Artisan artisan;
 
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
-
-    @PrePersist
-    protected void onCreate() {
-        createdAt = LocalDateTime.now();
-        updatedAt = LocalDateTime.now();
-        if (issueDate == null) {
-            issueDate = LocalDate.now();
-        }
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        updatedAt = LocalDateTime.now();
-    }
-
-    // Constructors
     public Certificate() {}
 
-    public Certificate(Product product, String heritageHash, String qrCodeData) {
-        this.product = product;
-        this.heritageHash = heritageHash;
-        this.qrCodeData = qrCodeData;
-    }
-
     // Getters and Setters
-    public Long getCertificateId() {
-        return certificateId;
-    }
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
-    public void setCertificateId(Long certificateId) {
-        this.certificateId = certificateId;
-    }
+    public String getCertificateNumber() { return certificateNumber; }
+    public void setCertificateNumber(String certificateNumber) { this.certificateNumber = certificateNumber; }
 
-    public Product getProduct() {
-        return product;
-    }
+    public String getIssuingAuthority() { return issuingAuthority; }
+    public void setIssuingAuthority(String issuingAuthority) { this.issuingAuthority = issuingAuthority; }
 
-    public void setProduct(Product product) {
-        this.product = product;
-    }
+    public LocalDate getIssueDate() { return issueDate; }
+    public void setIssueDate(LocalDate issueDate) { this.issueDate = issueDate; }
 
-    public String getHeritageHash() {
-        return heritageHash;
-    }
+    public LocalDate getExpiryDate() { return expiryDate; }
+    public void setExpiryDate(LocalDate expiryDate) { this.expiryDate = expiryDate; }
 
-    public void setHeritageHash(String heritageHash) {
-        this.heritageHash = heritageHash;
-    }
+    public String getHeritageDescription() { return heritageDescription; }
+    public void setHeritageDescription(String heritageDescription) { this.heritageDescription = heritageDescription; }
 
-    public String getQrCodeData() {
-        return qrCodeData;
-    }
+    public CertificateStatus getStatus() { return status; }
+    public void setStatus(CertificateStatus status) { this.status = status; }
 
-    public void setQrCodeData(String qrCodeData) {
-        this.qrCodeData = qrCodeData;
-    }
+    public Artisan getArtisan() { return artisan; }
+    public void setArtisan(Artisan artisan) { this.artisan = artisan; }
 
-    public LocalDate getIssueDate() {
-        return issueDate;
-    }
-
-    public void setIssueDate(LocalDate issueDate) {
-        this.issueDate = issueDate;
-    }
-
-    public CertificateStatus getVerificationStatus() {
-        return verificationStatus;
-    }
-
-    public void setVerificationStatus(CertificateStatus verificationStatus) {
-        this.verificationStatus = verificationStatus;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
+    @JsonProperty("artisan_id")
+    public void setArtisanId(Long artisanId) {
+        if (artisanId != null) {
+            if (this.artisan == null) {
+                this.artisan = new Artisan();
+            }
+            this.artisan.setArtisanId(artisanId);
+        }
     }
 }

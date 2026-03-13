@@ -2,6 +2,7 @@ package com.korarwandasystem.korarwanda.model;
 
 public enum ProductStatus {
     AVAILABLE,
-    SOLD,
-    ARCHIVED
+    OUT_OF_STOCK,
+    DISCONTINUED,
+    PENDING_APPROVAL
 }

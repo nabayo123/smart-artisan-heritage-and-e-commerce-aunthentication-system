@@ -1,5 +1,6 @@
 package com.korarwandasystem.korarwanda.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
@@ -96,5 +97,30 @@ public class OrderItem {
 
     public void setHeritageHash(String heritageHash) {
         this.heritageHash = heritageHash;
+    }
+
+    // Convenience method to maintain compatibility
+    public BigDecimal getPrice() {
+        return unitPrice;
+    }
+
+    @JsonProperty("order_id")
+    public void setOrderId(Long orderId) {
+        if (orderId != null) {
+            if (this.order == null) {
+                this.order = new Order();
+            }
+            this.order.setOrderId(orderId);
+        }
+    }
+
+    @JsonProperty("product_id")
+    public void setProductId(Long productId) {
+        if (productId != null) {
+            if (this.product == null) {
+                this.product = new Product();
+            }
+            this.product.setProductId(productId);
+        }
     }
 }

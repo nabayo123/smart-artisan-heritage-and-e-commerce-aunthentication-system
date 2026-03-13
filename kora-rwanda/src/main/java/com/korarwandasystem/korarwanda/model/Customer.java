@@ -1,101 +1,69 @@
 package com.korarwandasystem.korarwanda.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "CUSTOMER")
+@Table(name = "customers")
 public class Customer {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "customer_id")
+    @JsonProperty("customer_id")
     private Long customerId;
 
-    @Column(name = "full_name", nullable = false, length = 150)
-    @NotBlank(message = "Full name is required")
-    private String fullName;
+    @JsonProperty("first_name")
+    private String firstName;
 
-    @Column(name = "email", unique = true, length = 150)
-    @Email(message = "Email should be valid")
+    @JsonProperty("last_name")
+    private String lastName;
+
+    @JsonProperty("email")
     private String email;
 
-    @Column(name = "phone", length = 20)
+    @JsonProperty("phone")
     private String phone;
 
-    @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt;
+    @JsonProperty("address")
+    private String address;
 
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
+    @JsonProperty("city")
+    private String city;
 
-    @PrePersist
-    protected void onCreate() {
-        createdAt = LocalDateTime.now();
-        updatedAt = LocalDateTime.now();
-    }
+    @JsonProperty("province")
+    private String province;
 
-    @PreUpdate
-    protected void onUpdate() {
-        updatedAt = LocalDateTime.now();
-    }
+    @JsonProperty("district")
+    private String district;
 
-    // Constructors
+    // Default Constructor
     public Customer() {}
 
-    public Customer(String fullName, String email, String phone) {
-        this.fullName = fullName;
-        this.email = email;
-        this.phone = phone;
-    }
-
     // Getters and Setters
-    public Long getCustomerId() {
-        return customerId;
-    }
+    public Long getCustomerId() { return customerId; }
+    public void setCustomerId(Long customerId) { this.customerId = customerId; }
 
-    public void setCustomerId(Long customerId) {
-        this.customerId = customerId;
-    }
+    public String getFirstName() { return firstName; }
+    public void setFirstName(String firstName) { this.firstName = firstName; }
 
-    public String getFullName() {
-        return fullName;
-    }
+    public String getLastName() { return lastName; }
+    public void setLastName(String lastName) { this.lastName = lastName; }
 
-    public void setFullName(String fullName) {
-        this.fullName = fullName;
-    }
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
 
-    public String getEmail() {
-        return email;
-    }
+    public String getPhone() { return phone; }
+    public void setPhone(String phone) { this.phone = phone; }
 
-    public void setEmail(String email) {
-        this.email = email;
-    }
+    public String getAddress() { return address; }
+    public void setAddress(String address) { this.address = address; }
 
-    public String getPhone() {
-        return phone;
-    }
+    public String getCity() { return city; }
+    public void setCity(String city) { this.city = city; }
 
-    public void setPhone(String phone) {
-        this.phone = phone;
-    }
+    public String getProvince() { return province; }
+    public void setProvince(String province) { this.province = province; }
 
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
-    }
+    public String getDistrict() { return district; }
+    public void setDistrict(String district) { this.district = district; }
 }

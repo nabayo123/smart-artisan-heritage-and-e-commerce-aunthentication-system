@@ -1,163 +1,71 @@
 package com.korarwandasystem.korarwanda.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "ARTISAN")
+@Table(name = "artisans")
 public class Artisan {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "artisan_id")
+    @JsonProperty("artisan_id")
     private Long artisanId;
 
-    @Column(name = "full_name", nullable = false, length = 150)
-    @NotBlank(message = "Full name is required")
+    @JsonProperty("full_name")
     private String fullName;
 
-    @Column(name = "email", unique = true, length = 150)
-    @Email(message = "Email should be valid")
+    @JsonProperty("email")
     private String email;
 
-    @Column(name = "phone_number", length = 20)
-    private String phoneNumber;
+    @JsonProperty("specialization")
+    private String specialization;
 
-    @Column(name = "district_village", length = 100)
-    private String districtVillage;
+    @JsonProperty("province")
+    private String province;
 
-    @Column(name = "bio", columnDefinition = "TEXT")
-    private String bio;
-
-    @Column(name = "momo_number", length = 20)
-    private String momoNumber;
+    @JsonProperty("district")
+    private String district;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "verification_status")
-    private VerificationStatus verificationStatus = VerificationStatus.PENDING;
+    @JsonProperty("verification_status")
+    private VerificationStatus verificationStatus;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cooperative_id")
+    @JsonProperty("cooperative")
     private Cooperative cooperative;
 
-    @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt;
-
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
-
-    @PrePersist
-    protected void onCreate() {
-        createdAt = LocalDateTime.now();
-        updatedAt = LocalDateTime.now();
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        updatedAt = LocalDateTime.now();
-    }
-
-    // Constructors
+    // Default Constructor
     public Artisan() {}
 
-    public Artisan(String fullName, String email, String phoneNumber, String districtVillage, 
-                   String bio, String momoNumber, Cooperative cooperative) {
-        this.fullName = fullName;
-        this.email = email;
-        this.phoneNumber = phoneNumber;
-        this.districtVillage = districtVillage;
-        this.bio = bio;
-        this.momoNumber = momoNumber;
-        this.cooperative = cooperative;
-    }
+    // GETTERS (These resolve the "cannot find symbol" errors)
+    public Long getArtisanId() { return artisanId; }
+    public String getFullName() { return fullName; }
+    public String getEmail() { return email; }
+    public String getSpecialization() { return specialization; }
+    public String getProvince() { return province; }
+    public String getDistrict() { return district; }
+    public VerificationStatus getVerificationStatus() { return verificationStatus; }
+    public Cooperative getCooperative() { return cooperative; }
 
-    // Getters and Setters
-    public Long getArtisanId() {
-        return artisanId;
-    }
+    // SETTERS (Needed for creating and updating artisans)
+    public void setArtisanId(Long artisanId) { this.artisanId = artisanId; }
+    public void setFullName(String fullName) { this.fullName = fullName; }
+    public void setEmail(String email) { this.email = email; }
+    public void setSpecialization(String specialization) { this.specialization = specialization; }
+    public void setProvince(String province) { this.province = province; }
+    public void setDistrict(String district) { this.district = district; }
+    public void setVerificationStatus(VerificationStatus verificationStatus) { this.verificationStatus = verificationStatus; }
+    public void setCooperative(Cooperative cooperative) { this.cooperative = cooperative; }
 
-    public void setArtisanId(Long artisanId) {
-        this.artisanId = artisanId;
-    }
-
-    public String getFullName() {
-        return fullName;
-    }
-
-    public void setFullName(String fullName) {
-        this.fullName = fullName;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getPhoneNumber() {
-        return phoneNumber;
-    }
-
-    public void setPhoneNumber(String phoneNumber) {
-        this.phoneNumber = phoneNumber;
-    }
-
-    public String getDistrictVillage() {
-        return districtVillage;
-    }
-
-    public void setDistrictVillage(String districtVillage) {
-        this.districtVillage = districtVillage;
-    }
-
-    public String getBio() {
-        return bio;
-    }
-
-    public void setBio(String bio) {
-        this.bio = bio;
-    }
-
-    public String getMomoNumber() {
-        return momoNumber;
-    }
-
-    public void setMomoNumber(String momoNumber) {
-        this.momoNumber = momoNumber;
-    }
-
-    public VerificationStatus getVerificationStatus() {
-        return verificationStatus;
-    }
-
-    public void setVerificationStatus(VerificationStatus verificationStatus) {
-        this.verificationStatus = verificationStatus;
-    }
-
-    public Cooperative getCooperative() {
-        return cooperative;
-    }
-
-    public void setCooperative(Cooperative cooperative) {
-        this.cooperative = cooperative;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
+    @JsonProperty("cooperative_id")
+    public void setCooperativeId(Long cooperativeId) {
+        if (cooperativeId != null) {
+            if (this.cooperative == null) {
+                this.cooperative = new Cooperative();
+            }
+            this.cooperative.setCooperativeId(cooperativeId);
+        }
     }
 }

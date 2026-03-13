@@ -1,5 +1,6 @@
 package com.korarwandasystem.korarwanda.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
@@ -34,7 +35,8 @@ public class Order {
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<OrderItem> orderItems = new HashSet<>();
 
-    @OneToOne(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "payment_id", unique = true)
     private Payment payment;
 
     @Column(name = "created_at", updatable = false)
@@ -147,5 +149,15 @@ public class Order {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    @JsonProperty("customer_id")
+    public void setCustomerId(Long customerId) {
+        if (customerId != null) {
+            if (this.customer == null) {
+                this.customer = new Customer();
+            }
+            this.customer.setCustomerId(customerId);
+        }
     }
 }
