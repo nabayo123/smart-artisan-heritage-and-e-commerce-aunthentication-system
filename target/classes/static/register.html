@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register | Kora Rwanda</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body class="auth-page dark-theme">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    
+    <div class="auth-container large">
+        <div class="glass-card auth-card">
+            <div class="auth-header">
+                <a href="/index.html" class="back-link">← Back to Home</a>
+                <h2>Create an <span class="highlight">Account</span></h2>
+                <p>Join Kora Rwanda's community today.</p>
+            </div>
+            
+            <form id="registerForm" class="auth-form grid-form">
+                <div class="form-group">
+                    <label for="firstName">First Name</label>
+                    <input type="text" id="firstName" required placeholder="Jean">
+                </div>
+                
+                <div class="form-group">
+                    <label for="lastName">Last Name</label>
+                    <input type="text" id="lastName" required placeholder="Mukiza">
+                </div>
+                
+                <div class="form-group col-span-2">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" required placeholder="jean.mukiza@example.com">
+                </div>
+                
+                <div class="form-group">
+                    <label for="phoneNumber">Phone Number</label>
+                    <input type="tel" id="phoneNumber" required placeholder="+250 788 000 000">
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" required placeholder="••••••••" minlength="6">
+                </div>
+                
+                <div class="form-group col-span-2">
+                    <label for="userType">I am a...</label>
+                    <select id="userType" required>
+                        <option value="CUSTOMER">Customer (Buying Crafts)</option>
+                        <option value="ARTISAN">Artisan (Selling Crafts)</option>
+                    </select>
+                </div>
+                
+                <!-- Artisan Specific Fields -->
+                <div id="artisanFields" class="col-span-2 artisan-fields hidden">
+                    <div class="form-group">
+                        <label for="businessName">Business / Cooperative Name</label>
+                        <input type="text" id="businessName" placeholder="Kigali Artisans Co.">
+                    </div>
+                    <div class="form-group">
+                        <label for="description">Tell us about your craft</label>
+                        <textarea id="description" rows="3" placeholder="I specialize in traditional Rwandan baskets..."></textarea>
+                    </div>
+                </div>
+                
+                <div id="registerAlert" class="alert hidden col-span-2"></div>
+                
+                <div class="col-span-2 submit-area">
+                    <button type="submit" class="btn btn-primary btn-full" id="registerSubmitBtn">
+                        <span class="btn-text">Create Account</span>
+                        <span class="loader hidden"></span>
+                    </button>
+                    <p class="auth-footer mt-4">
+                        Already have an account? <a href="/login.html" class="text-link">Sign in</a>
+                    </p>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script src="/js/app.js"></script>
+</body>
+</html>
