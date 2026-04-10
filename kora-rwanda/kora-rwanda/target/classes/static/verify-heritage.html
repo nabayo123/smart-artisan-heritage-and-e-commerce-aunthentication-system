@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify Heritage | Kora-Rwanda</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #d4a373;
+            --success: #22c55e;
+            --error: #ef4444;
+            --dark: #0a0a0a;
+            --card-bg: #161616;
+            --border: rgba(255, 255, 255, 0.08);
+            --text-muted: #94a3b8;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
+        body { background: var(--dark); color: white; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 2rem; }
+
+        .container { width: 100%; max-width: 600px; margin-top: 5vh; }
+        .logo { font-size: 1.8rem; font-weight: 800; color: var(--primary); text-decoration: none; text-align: center; display: block; margin-bottom: 3rem; }
+
+        .search-box { background: var(--card-bg); border: 1px solid var(--border); padding: 2rem; border-radius: 32px; box-shadow: 0 20px 40px rgba(0,0,0,0.4); margin-bottom: 2rem; }
+        .search-box h2 { font-size: 1.5rem; margin-bottom: 1.5rem; font-weight: 700; text-align: center; }
+        .input-group { position: relative; }
+        input { width: 100%; background: #121212; border: 1px solid var(--border); padding: 1.2rem; border-radius: 16px; color: white; font-size: 1.1rem; text-align: center; font-family: monospace; letter-spacing: 2px; }
+        input:focus { outline: none; border-color: var(--primary); }
+        .btn-verify { width: 100%; background: var(--primary); color: #121212; border: none; padding: 1.2rem; border-radius: 16px; font-weight: 800; font-size: 1.1rem; margin-top: 1.5rem; cursor: pointer; transition: 0.3s; }
+        .btn-verify:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(212,163,115,0.3); }
+
+        #result-area { display: none; margin-top: 3rem; animation: fadeIn 0.5s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        .certificate-card { background: white; color: #1a1a1a; border-radius: 40px; padding: 0; overflow: hidden; box-shadow: 0 30px 60px rgba(0,0,0,0.5); }
+        .cert-header { background: #fdfaf7; padding: 3rem; text-align: center; border-bottom: 2px solid #f0e6da; }
+        .cert-status-icon { font-size: 4rem; margin-bottom: 1rem; }
+        .cert-title { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; color: #4a3728; }
+        
+        .cert-body { padding: 3rem; }
+        .cert-row { display: flex; justify-content: space-between; margin-bottom: 1.5rem; border-bottom: 1px solid #eee; padding-bottom: 0.5rem; }
+        .cert-label { font-weight: 600; color: #888; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 1px; }
+        .cert-value { font-weight: 700; color: #1a1a1a; font-size: 1rem; }
+
+        .artisan-blob { background: #fdfaf7; border: 1px solid #f0e6da; padding: 2rem; border-radius: 24px; margin-top: 2rem; }
+        .artisan-blob h4 { margin-bottom: 0.5rem; color: var(--primary-dark); }
+        .artisan-blob p { font-size: 0.9rem; color: #666; line-height: 1.6; }
+
+        .cert-footer { padding: 2rem; background: #1a1a1a; color: white; text-align: center; font-family: monospace; font-size: 0.8rem; opacity: 0.8; }
+
+        .error-card { background: rgba(239, 68, 68, 0.1); border: 1px solid var(--error); padding: 2rem; border-radius: 24px; color: #fca5a5; text-align: center; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/" class="logo">KORA.RWANDA</a>
+
+        <div class="search-box">
+            <h2>Heritage Authenticator</h2>
+            <div class="input-group">
+                <input type="text" id="hash-input" placeholder="ENTER HERITAGE TAG HASH" maxlength="64">
+            </div>
+            <button class="btn-verify" onclick="handleVerify()" id="verify-btn">Scan Blockchain Identity</button>
+        </div>
+
+        <div id="result-area">
+            <!-- Results populated by JS -->
+        </div>
+    </div>
+
+    <script>
+        // Check URL params for hash
+        const urlParams = new URLSearchParams(window.location.search);
+        const prefilledHash = urlParams.get('hash');
+        if (prefilledHash) {
+            document.getElementById('hash-input').value = prefilledHash;
+            handleVerify();
+        }
+
+        async function handleVerify() {
+            const hash = document.getElementById('hash-input').value.trim();
+            const resultArea = document.getElementById('result-area');
+            const btn = document.getElementById('verify-btn');
+
+            if (!hash) return;
+
+            btn.disabled = true;
+            btn.textContent = 'Verifying Heritage...';
+            resultArea.style.display = 'none';
+
+            try {
+                const res = await fetch(`/api/certificates/verify/${hash}`);
+                const data = await res.json();
+                
+                resultArea.style.display = 'block';
+                
+                if (data.success && data.data.authentic) {
+                    const c = data.data.certificate;
+                    resultArea.innerHTML = `
+                        <div class="certificate-card">
+                            <div class="cert-header">
+                                <div class="cert-status-icon">🛡️</div>
+                                <div class="cert-title">OFFICIALLY VERIFIED</div>
+                                <p style="color: #bc8a5f; font-weight: 600; margin-top: 0.5rem;">Authentic Rwandan Craft</p>
+                            </div>
+                            <div class="cert-body">
+                                <div class="cert-row">
+                                    <span class="cert-label">Product Name</span>
+                                    <span class="cert-value">${c.productName}</span>
+                                </div>
+                                <div class="cert-row">
+                                    <span class="cert-label">Issued Date</span>
+                                    <span class="cert-value">${new Date(c.issueDate).toLocaleDateString()}</span>
+                                </div>
+                                <div class="cert-row">
+                                    <span class="cert-label">Status</span>
+                                    <span class="cert-value" style="color: var(--success)">VALID CERTIFICATE</span>
+                                </div>
+                                
+                                <div class="artisan-blob">
+                                    <h4>By Master Artisan ${c.artisanName}</h4>
+                                    <p style="margin-bottom: 0.5rem;"><strong>Origin:</strong> ${c.artisanDistrict}, Rwanda</p>
+                                    <p><em>"${c.artisanBio || 'Proudly preserving the heritage of Rwanda through traditional craftsmanship.'}"</em></p>
+                                </div>
+                            </div>
+                            <div style="padding: 0 3rem 3rem;">
+                                <button class="btn-verify" style="background: var(--success); color: white; margin-top: 0; width: 100%; height: 70px; font-size: 1.3rem; border-radius: 20px;" 
+                                        onclick="buyFromHeritage(${c.productId}, '${c.productName}')">
+                                    Secure & Purchase Now 🛒
+                                </button>
+                            </div>
+                            <div class="cert-footer">
+                                CERTIFICATE ID: ${c.heritageHash}
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    resultArea.innerHTML = `
+                        <div class="error-card">
+                            <div style="font-size: 3rem; margin-bottom: 1rem;">🚫</div>
+                            <h3>VERIFICATION FAILED</h3>
+                            <p style="margin-top: 1rem;">This Heritage Tag hash was not found in our verified registry. Please check for typos or report this item if you suspect it is counterfeit.</p>
+                        </div>
+                    `;
+                }
+            } catch (err) {
+                alert('Connection error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Scan Blockchain Identity';
+            }
+        }
+
+        async function buyFromHeritage(productId, name) {
+            const user = JSON.parse(localStorage.getItem('kora_user'));
+            const token = localStorage.getItem('kora_token');
+
+            if (!token) {
+                alert('Please login to purchase this heritage craft.');
+                window.location.href = '/login.html';
+                return;
+            }
+
+            if (!confirm(`Do you want to secure and purchase "${name}"?`)) return;
+
+            const payload = {
+                items: [{ productId: productId, quantity: 1 }]
+            };
+
+            try {
+                const res = await fetch(`/api/orders/customer/${user.userId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + token
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await res.json();
+                if (data.success) {
+                    alert('Order Placed Successfully! Visit the Marketplace to finalize payment.');
+                    window.location.href = '/marketplace.html';
+                } else {
+                    alert('Order failed: ' + (data.message || 'Check if the product is already sold.'));
+                }
+            } catch (err) {
+                alert('Order processing error');
+            }
+        }
+    </script>
+</body>
+</html>

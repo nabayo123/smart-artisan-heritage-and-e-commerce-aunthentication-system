@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marketplace | Kora-Rwanda</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #d4a373;
+            --primary-dark: #bc8a5f;
+            --dark: #0a0a0a;
+            --card-bg: #161616;
+            --glass: rgba(255, 255, 255, 0.03);
+            --border: rgba(255, 255, 255, 0.08);
+            --text-muted: #94a3b8;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
+        body { background: var(--dark); color: white; min-height: 100vh; overflow-x: hidden; }
+
+        header { padding: 2rem 8%; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); background: rgba(10,10,10,0.8); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 100; }
+        .logo { font-size: 1.5rem; font-weight: 800; color: var(--primary); text-decoration: none; }
+        .nav-links { display: flex; align-items: center; gap: 2rem; }
+        .nav-links a { color: white; text-decoration: none; font-weight: 500; font-size: 0.95rem; opacity: 0.7; transition: 0.3s; }
+        .nav-links a:hover { opacity: 1; color: var(--primary); }
+        .btn-dash { background: var(--glass); border: 1px solid var(--border); padding: 0.6rem 1.2rem; border-radius: 12px; color: white; transition: 0.3s; }
+
+        .hero-market { padding: 5rem 8% 3rem; text-align: center; }
+        .hero-market h1 { font-size: 3.5rem; font-weight: 800; margin-bottom: 1rem; }
+        .hero-market p { color: var(--text-muted); font-size: 1.1rem; max-width: 600px; margin: 0 auto; }
+
+        .market-grid { padding: 4rem 8%; display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 2.5rem; }
+        .product-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 28px; overflow: hidden; transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1); cursor: pointer; position: relative; }
+        .product-card:hover { transform: translateY(-10px); border-color: var(--primary); box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
+        
+        .product-img { width: 100%; height: 240px; background: #1f1f1f; display: flex; align-items: center; justify-content: center; font-size: 3rem; position: relative; }
+        .product-img::after { content: 'VERIFIED HERITAGE'; font-size: 0.6rem; font-weight: 800; color: var(--primary); position: absolute; top: 1.5rem; right: 1.5rem; border: 1px solid var(--primary); padding: 0.3rem 0.6rem; border-radius: 4px; }
+
+        .product-content { padding: 2rem; }
+        .product-cat { font-size: 0.75rem; font-weight: 700; color: var(--primary); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.8rem; }
+        .product-name { font-size: 1.4rem; font-weight: 700; margin-bottom: 0.5rem; }
+        .product-artisan { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem; }
+        .footer-card { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border); padding-top: 1.5rem; }
+        .price { font-size: 1.5rem; font-weight: 800; }
+        .btn-buy { background: var(--primary); color: #121212; padding: 0.7rem 1.2rem; border-radius: 12px; font-weight: 700; border: none; cursor: pointer; transition: 0.3s; }
+        .btn-buy:hover { transform: scale(1.05); box-shadow: 0 8px 20px rgba(212,163,115,0.4); }
+
+        /* Notification */
+        .toast { position: fixed; bottom: 2rem; right: 2rem; background: #22c55e; color: white; padding: 1rem 2rem; border-radius: 12px; font-weight: 600; transform: translateY(100px); opacity: 0; transition: 0.5s; z-index: 1000; }
+        .toast.show { transform: translateY(0); opacity: 1; }
+
+        /* Modal */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(10px); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 2rem; }
+        .modal-overlay.show { display: flex; }
+        .modal { background: #161616; border: 1px solid var(--border); padding: 3rem; border-radius: 32px; width: 100%; max-width: 450px; text-align: center; }
+        .modal h3 { font-size: 1.8rem; margin-bottom: 0.5rem; color: var(--primary); }
+        .modal input, .modal select { width: 100%; padding: 1rem; background: var(--glass); border: 1px solid var(--border); border-radius: 12px; color: white; margin-bottom: 1rem; outline: none; }
+        .modal input:focus { border-color: var(--primary); }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="/" class="logo">KORA.RWANDA</a>
+        <div class="nav-links">
+            <a href="/marketplace.html" style="color: var(--primary); opacity: 1;">Explore</a>
+            <a href="#">Heritage</a>
+            <a href="#">Artisans</a>
+            <div id="auth-links">
+                <a href="/login.html" class="btn-dash">Login</a>
+                <a href="/register.html" class="btn-dash" style="background: var(--primary); color: #121212; border: none;">Join</a>
+            </div>
+        </div>
+    </header>
+
+    <div class="hero-market">
+        <h1>Discover Authentic Rwanda</h1>
+        <p>Direct from verified artisans across the Land of a Thousand Hills. Every piece comes with its own cryptographic certificate of heritage.</p>
+    </div>
+
+    <div class="market-grid" id="market-container">
+        <p style="grid-column: 1/-1; text-align: center; padding: 5rem;">Loading verified crafts...</p>
+    </div>
+
+    <div id="toast" class="toast">Thank you! Your verified treasure is being prepared. 🎉</div>
+
+    <!-- Checkout Modal -->
+    <div id="checkout-modal" class="modal-overlay">
+        <div class="modal">
+            <h3>Secure Heritage</h3>
+            <p style="color: var(--text-muted); margin-bottom: 2rem;">Authenticity cryptographic certificate will be generated upon payment.</p>
+            <div style="text-align: left; margin-bottom: 2rem;">
+                <p id="checkout-product-name" style="font-size: 1.2rem; font-weight: 700; margin-bottom: 0.5rem;"></p>
+                <p style="font-size: 1.5rem; font-weight: 800; color: var(--primary);">RWF <span id="checkout-amount"></span></p>
+            </div>
+            
+            <div style="text-align: left; margin-bottom: 2rem;">
+                <label style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 0.5rem;">Payment Method</label>
+                <select id="payment-method">
+                    <option value="MTN_MOMO">MTN MoMo</option>
+                    <option value="AIRTEL_MONEY">Airtel Money</option>
+                </select>
+                
+                <label style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 0.5rem;">Mobile Number</label>
+                <input type="text" id="momo-phone" placeholder="078 / 079 / 072 / 073 ...">
+            </div>
+
+            <button id="pay-confirm-btn" class="btn-buy" style="width: 100%; padding: 1.2rem;" onclick="processPayment()">Secure Heritage Now</button>
+            <button class="nav-links a" style="background: none; border: none; font-size: 0.9rem; margin-top: 1.5rem; cursor: pointer; color: #f87171;" onclick="closeCheckoutModal()">Cancel Transaction</button>
+        </div>
+    </div>
+
+    <script>
+        const user = JSON.parse(localStorage.getItem('kora_user'));
+        const token = localStorage.getItem('kora_token');
+
+        if (user) {
+            const dashLink = user.role === 'ROLE_ADMIN' ? 'admin-dashboard.html' : 
+                            user.role === 'ROLE_ARTISAN' ? 'artisan-dashboard.html' : 'customer-dashboard.html';
+            document.getElementById('auth-links').innerHTML = `
+                <a href="/${dashLink}" class="btn-dash">My Dashboard</a>
+                <a href="#" onclick="logout()" style="color: #f87171; font-weight:600; opacity:0.8;">Logout</a>
+            `;
+        }
+
+        async function loadMarket() {
+            try {
+                const res = await fetch('/api/products/public');
+                const data = await res.json();
+                const container = document.getElementById('market-container');
+                
+                if (data.success && data.data.length > 0) {
+                    container.innerHTML = data.data.map(p => `
+                        <div class="product-card">
+                            <div class="product-img">🎨</div>
+                            <div class="product-content">
+                                <div class="product-cat">${p.category || 'HANDCRAFT'}</div>
+                                <h3 class="product-name">${p.name}</h3>
+                                <div class="product-artisan">
+                                    <span style="font-size: 1.2rem;">👤</span> 
+                                    By ${p.artisanName} • ${p.artisanDistrict || 'Rwanda'}
+                                </div>
+                                <div style="margin-bottom: 1rem;">
+                                    ${p.heritageHash ? `<a href="/verify-heritage.html?hash=${p.heritageHash}" style="color: var(--primary); text-decoration: none; font-size: 0.8rem; font-weight: 700; border: 1px solid var(--primary); padding: 0.3rem 0.6rem; border-radius: 6px;">🛡️ VERIFY HERITAGE</a>` : '<span style="color: var(--text-muted); font-size: 0.8rem;">PENDING VERIFICATION</span>'}
+                                </div>
+                                <div class="footer-card">
+                                    <div class="price">RWF ${p.price.toLocaleString()}</div>
+                                    <button class="btn-buy" onclick="buyProduct(event, ${p.productId}, '${p.name}')">Buy Now</button>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    container.innerHTML = '<p style="grid-column: 1/-1; text-align: center;">No products available at the moment. Check back soon!</p>';
+                }
+            } catch (err) {
+                console.error(err);
+                container.innerHTML = '<p>Error loading products.</p>';
+            }
+        }
+
+        let currentOrderData = null;
+
+        async function buyProduct(event, id, name) {
+            event.stopPropagation();
+            if (!token) {
+                alert('Please login to purchase heritage crafts.');
+                window.location.href = '/login.html';
+                return;
+            }
+
+            const payload = {
+                items: [{ productId: id, quantity: 1 }]
+            };
+
+            try {
+                const res = await fetch(`/api/orders/customer/${user.userId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + token
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await res.json();
+                if (data.success) {
+                    currentOrderData = data.data;
+                    openCheckoutModal(name, currentOrderData.totalAmount);
+                } else {
+                    alert('Order failed: ' + data.message);
+                }
+            } catch (err) {
+                alert('Order processing error');
+            }
+        }
+
+        function openCheckoutModal(name, amount) {
+            document.getElementById('checkout-product-name').textContent = name;
+            document.getElementById('checkout-amount').textContent = amount.toLocaleString();
+            document.getElementById('checkout-modal').classList.add('show');
+        }
+
+        function closeCheckoutModal() {
+            document.getElementById('checkout-modal').classList.remove('show');
+        }
+
+        async function processPayment() {
+            const method = document.getElementById('payment-method').value;
+            const phone = document.getElementById('momo-phone').value;
+            const btn = document.getElementById('pay-confirm-btn');
+
+            if (!phone) { alert('Enter phone number for MoMo/Airtel'); return; }
+
+            btn.disabled = true;
+            btn.textContent = 'Awaiting MoMo Prompt...';
+
+            try {
+                // 1. Initiate Payment
+                const initRes = await fetch('/api/payments/initiate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + token
+                    },
+                    body: JSON.stringify({
+                        orderId: currentOrderData.orderId,
+                        paymentMethod: method,
+                        momoNumber: phone
+                    })
+                });
+                const initData = await initRes.json();
+                
+                if (initData.success) {
+                    const paymentId = initData.data.paymentId;
+                    
+                    // 2. Simulate User Confirming on Phone (wait 2s)
+                    setTimeout(async () => {
+                        const confirmRes = await fetch(`/api/payments/${paymentId}/confirm`, {
+                            method: 'POST',
+                            headers: { 'Authorization': 'Bearer ' + token }
+                        });
+                        if (confirmRes.ok) {
+                            alert('Heritage secured! Your transaction is complete and funds have been released to the artisan.');
+                            closeCheckoutModal();
+                            window.location.href = '/customer-dashboard.html';
+                        }
+                    }, 2000);
+                }
+            } catch (err) {
+                alert('Payment system error');
+                btn.disabled = false;
+                btn.textContent = 'Secure Heritage Now';
+            }
+        }
+
+        function logout() { localStorage.clear(); window.location.reload(); }
+        loadMarket();
+    </script>
+</body>
+</html>

@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Artisan Dashboard | Kora-Rwanda</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #d4a373;
+            --primary-dark: #bc8a5f;
+            --dark: #121212;
+            --card-bg: #1c1c1c;
+            --border: rgba(255, 255, 255, 0.08);
+            --text-muted: #94a3b8;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
+        body { background: var(--dark); color: white; display: flex; min-height: 100vh; }
+
+        aside { width: 280px; background: #0a0a0a; border-right: 1px solid var(--border); padding: 2rem; display: flex; flex-direction: column; gap: 2rem; }
+        .logo { font-size: 1.4rem; font-weight: 800; color: var(--primary); letter-spacing: -0.5px; }
+        .nav-items li a { display: flex; align-items: center; gap: 1rem; padding: 1rem; border-radius: 12px; color: var(--text-muted); text-decoration: none; transition: 0.3s; }
+        .nav-items li a:hover, .nav-items li a.active { background: rgba(255,255,255,0.05); color: var(--primary); }
+
+        main { flex: 1; padding: 3rem; overflow-y: auto; }
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 3rem; }
+        .btn-add { background: var(--primary); color: #121212; padding: 0.8rem 1.5rem; border-radius: 12px; text-decoration: none; font-weight: 700; transition: 0.3s; cursor: pointer; border:none; }
+        .btn-add:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(212,163,115,0.3); }
+
+        .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 2rem; }
+        .product-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 24px; overflow: hidden; transition: 0.3s; display: flex; flex-direction: column; }
+        .product-card:hover { border-color: var(--primary); transform: translateY(-5px); }
+        .product-info { padding: 1.5rem; flex: 1; }
+        .tag-badge { background: rgba(212,163,115,0.1); color: var(--primary); padding: 0.4rem 0.8rem; border-radius: 8px; font-size: 0.75rem; font-weight: 700; font-family: monospace; }
+
+        /* Modal */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px); z-index: 1000; align-items: center; justify-content: center; }
+        .modal.show { display: flex; }
+        .modal-content { background: #1a1a1a; border: 1px solid var(--border); padding: 3rem; border-radius: 32px; width: 100%; max-width: 500px; position: relative; }
+        .close-modal { position: absolute; top: 1.5rem; right: 1.5rem; font-size: 1.5rem; color: var(--text-muted); cursor: pointer; }
+
+        .form-group { margin-bottom: 1.5rem; }
+        .form-group label { display: block; margin-bottom: 0.5rem; font-size: 0.9rem; color: var(--text-muted); }
+        .form-group input, .form-group textarea { width: 100%; background: #121212; border: 1px solid var(--border); padding: 1rem; border-radius: 12px; color: white; transition: 0.3s; }
+        .form-group input:focus { outline: none; border-color: var(--primary); }
+    </style>
+</head>
+<body>
+    <aside>
+        <div class="logo">KORA.RWANDA</div>
+        <ul class="nav-items" style="list-style: none;">
+            <li><a href="/marketplace.html">Explore Platform</a></li>
+            <li><a href="#" id="nav-products" class="active" onclick="switchView('products')">My Products</a></li>
+            <li><a href="#" id="nav-status" onclick="switchView('status')">Verification Status</a></li>
+            <li><a href="/security.html">Security Settings</a></li>
+            <li><a href="/login.html" onclick="localStorage.clear()">Log Out</a></li>
+        </ul>
+    </aside>
+
+    <main>
+        <header>
+            <div>
+                <h1 id="view-title">Artisan Dashboard</h1>
+                <p style="color: var(--text-muted);">Manage your crafts and track authenticity.</p>
+            </div>
+            <div>
+                <span id="artisan-name" style="margin-right: 1.5rem; color: var(--primary); font-weight: 600;">Artisan Name</span>
+                <button class="btn-add" id="add-btn" onclick="openModal()">+ New Product</button>
+            </div>
+        </header>
+
+        <section id="products-view">
+            <div class="products-grid" id="products-container">
+                <p>Loading your heritage works...</p>
+            </div>
+        </section>
+
+        <section id="status-view" style="display: none;">
+            <div style="background: var(--card-bg); border: 1px solid var(--border); padding: 3rem; border-radius: 32px; text-align: center;">
+                <div id="status-icon" style="font-size: 4rem; margin-bottom: 2rem;">⏳</div>
+                <h2 id="status-text" style="font-size: 2rem; margin-bottom: 1rem;">Verification Pending</h2>
+                <p id="status-desc" style="color: var(--text-muted); max-width: 500px; margin: 0 auto; line-height: 1.6;">
+                    Our heritage oversight committee is currently reviewing your registration. You can still list products, but they will marked as "Unverified" until approval.
+                </p>
+                <div id="badge-area" style="margin-top: 3rem;"></div>
+            </div>
+        </section>
+    </main>
+
+    <!-- ADD PRODUCT MODAL -->
+    <div class="modal" id="product-modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal()">&times;</span>
+            <h2 style="margin-bottom: 2rem;">Add New Craft</h2>
+            <form id="add-product-form" onsubmit="handleAddProduct(event)">
+                <div class="form-group">
+                    <label>Product Name</label>
+                    <input type="text" id="p-name" placeholder="e.g. Handwoven Agaseke" required>
+                </div>
+                <div class="form-group">
+                    <label>Category</label>
+                    <input type="text" id="p-category" placeholder="Basketry, Pottery, etc." required>
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea id="p-desc" rows="3" placeholder="Tell the story of this piece..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Price (RWF)</label>
+                    <input type="number" id="p-price" placeholder="45000" required>
+                </div>
+                <button type="submit" class="btn-add" style="width: 100%;" id="submit-btn">Register Product & Generate ID</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const token = localStorage.getItem('kora_token');
+        const user = JSON.parse(localStorage.getItem('kora_user'));
+
+        if (!token || user.role !== 'ROLE_ARTISAN') window.location.href = '/login.html';
+        document.getElementById('artisan-name').textContent = user.fullName;
+
+        function switchView(view) {
+            document.getElementById('products-view').style.display = view === 'products' ? 'block' : 'none';
+            document.getElementById('status-view').style.display = view === 'status' ? 'block' : 'none';
+            document.getElementById('view-title').textContent = view === 'products' ? 'My Products' : 'Heritage Status';
+            document.getElementById('add-btn').style.display = view === 'products' ? 'block' : 'none';
+            
+            document.getElementById('nav-products').classList.toggle('active', view === 'products');
+            document.getElementById('nav-status').classList.toggle('active', view === 'status');
+            
+            if (view === 'status') loadProfile();
+        }
+
+        async function loadProfile() {
+            try {
+                const res = await fetch(`/api/artisan/profile/${user.userId}`, {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                const result = await res.json();
+                if (result.success) {
+                    const a = result.data;
+                    const isApproved = a.verificationStatus === 'APPROVED';
+                    document.getElementById('status-icon').textContent = isApproved ? '⭐' : '⏳';
+                    document.getElementById('status-text').textContent = isApproved ? 'Verified Artisan' : 'Verification Pending';
+                    document.getElementById('status-desc').textContent = isApproved ? 
+                        'You are a verified master artisan of Kora Rwanda. Your products are now automatically tagged with cryptographic heritage certificates.' :
+                        'Our committee is reviewing your registration. Your products will remain unverified in the marketplace until approval.';
+                }
+            } catch (err) { console.error(err); }
+        }
+
+        function openModal() { document.getElementById('product-modal').classList.add('show'); }
+        function closeModal() { document.getElementById('product-modal').classList.remove('show'); }
+
+        async function loadProducts() {
+            try {
+                const res = await fetch(`/api/artisan/products/${user.userId}`, {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                const data = await res.json();
+                const container = document.getElementById('products-container');
+                
+                if (data.success && data.data.length > 0) {
+                    container.innerHTML = data.data.map(p => `
+                        <div class="product-card">
+                            <div class="product-info">
+                                <h3 style="margin-bottom: 0.8rem;">${p.name}</h3>
+                                <p style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.5; margin-bottom: 1.5rem;">${p.description || 'No description available.'}</p>
+                                <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border); padding-top: 1rem;">
+                                    <span style="font-weight: 800; font-size: 1.2rem; color: white;">RWF ${p.price.toLocaleString()}</span>
+                                    <span class="tag-badge">ID: ${p.heritageHash ? p.heritageHash.substring(0, 10).toUpperCase() : 'PENDING'}</span>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    container.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 5rem; background: var(--card-bg); border-radius: 24px; border: 1px dashed var(--border);"><h3>No products yet.</h3><p style="color: var(--text-muted); margin-top: 1rem;">Click "New Product" to begin building your heritage inventory.</p></div>';
+                }
+            } catch (err) { container.innerHTML = '<p>Error loading products.</p>'; }
+        }
+
+        async function handleAddProduct(e) {
+            e.preventDefault();
+            const btn = document.getElementById('submit-btn');
+            btn.disabled = true;
+            btn.textContent = 'Generating Certificate...';
+
+            const payload = {
+                name: document.getElementById('p-name').value,
+                category: document.getElementById('p-category').value,
+                description: document.getElementById('p-desc').value,
+                price: parseFloat(document.getElementById('p-price').value)
+            };
+
+            try {
+                const res = await fetch(`/api/artisan/products?artisanId=${user.userId}`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + token
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (res.ok) {
+                    alert('Product registered successfully with a unique Heritage ID!');
+                    closeModal();
+                    loadProducts();
+                    document.getElementById('add-product-form').reset();
+                } else {
+                    const err = await res.json();
+                    alert('Error: ' + (err.message || 'Operation failed'));
+                }
+            } catch (err) { alert('Network error'); }
+            finally { 
+                btn.disabled = false; 
+                btn.textContent = 'Register Product & Generate ID';
+            }
+        }
+
+        function logout() { localStorage.clear(); window.location.href = '/login.html'; }
+        loadProducts();
+    </script>
+</body>
+</html>
