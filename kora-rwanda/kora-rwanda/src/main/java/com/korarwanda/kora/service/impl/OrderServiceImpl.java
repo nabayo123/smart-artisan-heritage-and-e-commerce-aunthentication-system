@@ -42,13 +42,11 @@ public class OrderServiceImpl implements OrderService {
         }
 
         Order order = new Order();
+        order.setBuyerId(userId); // Track who bought it regardless of entity type
         if (customer != null) {
             order.setCustomer(customer);
-        } else {
-            // For testing: Log which entity is buying
-            if (artisan != null) {
-                log.info("🛒 Artisan Buying Item: {} by {}", artisan.getFullName(), artisan.getEmail());
-            }
+        } else if (artisan != null) {
+            log.info("🛒 Artisan Buying Item: {} by {}", artisan.getFullName(), artisan.getEmail());
         }
         order.setOrderStatus(OrderStatus.PENDING);
         order.setOrderItems(new ArrayList<>());
@@ -76,10 +74,6 @@ public class OrderServiceImpl implements OrderService {
 
             items.add(item);
             total = total.add(product.getPrice().multiply(BigDecimal.valueOf(itemReq.getQuantity())));
-
-            // Mark as SOLD if quantity = 1 (each craft is unique)
-            product.setStatus(ProductStatus.SOLD);
-            productRepository.save(product);
         }
 
         order.setTotalAmount(total);
@@ -96,7 +90,12 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public List<OrderDto.Response> getByCustomer(Long customerId) {
-        return orderRepository.findByCustomer_CustomerId(customerId).stream()
+        // Find orders where either the linked customer ID matches OR the buyerId matches
+        List<Order> orders = orderRepository.findByBuyerId(customerId);
+        if (orders.isEmpty()) {
+            orders = orderRepository.findByCustomer_CustomerId(customerId);
+        }
+        return orders.stream()
                 .map(this::toResponse).collect(Collectors.toList());
     }
 

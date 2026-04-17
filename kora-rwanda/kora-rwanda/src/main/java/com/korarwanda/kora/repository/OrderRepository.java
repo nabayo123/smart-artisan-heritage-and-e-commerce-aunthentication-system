@@ -10,6 +10,7 @@ import java.util.List;
 @Repository
 public interface OrderRepository extends JpaRepository<Order, Long> {
     List<Order> findByCustomer_CustomerId(Long customerId);
+    List<Order> findByBuyerId(Long buyerId);
     List<Order> findByOrderStatus(OrderStatus status);
     
     @org.springframework.data.jpa.repository.Query("SELECT COALESCE(SUM(o.totalAmount), 0) FROM PlatformOrder o")

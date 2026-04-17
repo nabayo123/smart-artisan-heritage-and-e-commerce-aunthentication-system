@@ -23,7 +23,7 @@ public class OrderController {
     private final OrderService orderService;
 
     @PostMapping("/customer/{customerId}")
-    @PreAuthorize("hasAnyRole('CUSTOMER', 'ARTISAN', 'ADMIN')")
+    @PreAuthorize("hasAnyAuthority('ROLE_CUSTOMER', 'ROLE_ARTISAN', 'ROLE_ADMIN')")
     @Operation(summary = "Place a new order")
     public ResponseEntity<ApiResponse<OrderDto.Response>> createOrder(
             @PathVariable Long customerId,
@@ -41,7 +41,7 @@ public class OrderController {
     }
 
     @GetMapping("/customer/{customerId}")
-    @PreAuthorize("hasAnyRole('CUSTOMER', 'ADMIN')")
+    @PreAuthorize("hasAnyAuthority('ROLE_CUSTOMER', 'ROLE_ARTISAN', 'ROLE_ADMIN')")
     @Operation(summary = "Get all orders for a customer")
     public ResponseEntity<ApiResponse<List<OrderDto.Response>>> getByCustomer(
             @PathVariable Long customerId) {
@@ -50,7 +50,7 @@ public class OrderController {
     }
 
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @Operation(summary = "Get all orders (Admin only)")
     public ResponseEntity<ApiResponse<List<OrderDto.Response>>> getAll() {
         return ResponseEntity.ok(ApiResponse.success("All orders retrieved",
@@ -58,7 +58,7 @@ public class OrderController {
     }
 
     @PatchMapping("/{orderId}/status")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @Operation(summary = "Update order status (Admin only)")
     public ResponseEntity<ApiResponse<OrderDto.Response>> updateStatus(
             @PathVariable Long orderId,

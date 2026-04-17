@@ -23,7 +23,7 @@ public class CooperativeController {
     private final CooperativeService cooperativeService;
 
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @Operation(summary = "Create a new cooperative (Admin only)")
     public ResponseEntity<ApiResponse<CooperativeDto.Response>> create(
             @Valid @RequestBody CooperativeDto.Request request) {
@@ -54,7 +54,7 @@ public class CooperativeController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @Operation(summary = "Update cooperative (Admin only)")
     public ResponseEntity<ApiResponse<CooperativeDto.Response>> update(
             @PathVariable Long id, @Valid @RequestBody CooperativeDto.Request request) {
@@ -63,7 +63,7 @@ public class CooperativeController {
     }
 
     @PatchMapping("/{id}/status")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @Operation(summary = "Update cooperative verification status (Admin only)")
     public ResponseEntity<ApiResponse<CooperativeDto.Response>> updateStatus(
             @PathVariable Long id, @RequestParam VerificationStatus status) {
@@ -72,7 +72,7 @@ public class CooperativeController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @Operation(summary = "Delete cooperative (Admin only)")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id) {
         cooperativeService.delete(id);

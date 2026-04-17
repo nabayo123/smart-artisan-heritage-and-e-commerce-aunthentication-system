@@ -33,7 +33,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         if (artisan.isPresent()) {
             Artisan a = artisan.get();
             return new User(a.getEmail(), a.getPassword(),
-                    List.of(new SimpleGrantedAuthority(a.getRole().name())));
+                    List.of(new SimpleGrantedAuthority("ROLE_" + a.getRole().name())));
         }
 
         // Check Customer
@@ -41,7 +41,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         if (customer.isPresent()) {
             Customer c = customer.get();
             return new User(c.getEmail(), c.getPassword(),
-                    List.of(new SimpleGrantedAuthority(c.getRole().name())));
+                    List.of(new SimpleGrantedAuthority("ROLE_" + c.getRole().name())));
         }
 
         // Check Admin
@@ -49,7 +49,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         if (admin.isPresent()) {
             Admin adm = admin.get();
             return new User(adm.getEmail(), adm.getPassword(),
-                    List.of(new SimpleGrantedAuthority(adm.getRole().name())));
+                    List.of(new SimpleGrantedAuthority("ROLE_" + adm.getRole().name())));
         }
 
         throw new UsernameNotFoundException("User not found with email: " + email);

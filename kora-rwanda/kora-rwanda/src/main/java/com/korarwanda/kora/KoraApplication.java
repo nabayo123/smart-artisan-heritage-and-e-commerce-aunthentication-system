@@ -20,7 +20,7 @@ public class KoraApplication {
         return args -> {
             System.out.println("Wait 5 seconds for the system to fully initialize...");
             Thread.sleep(5000); // 5 seconds to be safe
-            String url = "http://localhost:8080/register.html";
+            String url = "http://localhost:8080/login.html";
             String os = System.getProperty("os.name").toLowerCase();
             if (os.contains("win")) {
                 Runtime.getRuntime().exec("rundll32 url.dll,FileProtocolHandler " + url);

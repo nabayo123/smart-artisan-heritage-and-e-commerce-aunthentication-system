@@ -47,7 +47,7 @@ public class ProductController {
     // ---- ARTISAN endpoints ----
 
     @PostMapping("/api/artisan/products")
-    @PreAuthorize("hasAnyRole('ARTISAN', 'ADMIN')")
+    @PreAuthorize("hasAnyAuthority('ROLE_ARTISAN', 'ROLE_ADMIN')")
     @Operation(summary = "Create a product with auto-generated Heritage Tag (Artisan)")
     public ResponseEntity<ApiResponse<ProductDto.Response>> create(
             @RequestParam Long artisanId,
@@ -57,7 +57,7 @@ public class ProductController {
     }
 
     @GetMapping("/api/artisan/products/{artisanId}")
-    @PreAuthorize("hasAnyRole('ARTISAN', 'ADMIN')")
+    @PreAuthorize("hasAnyAuthority('ROLE_ARTISAN', 'ROLE_ADMIN')")
     @Operation(summary = "Get all products by artisan")
     public ResponseEntity<ApiResponse<List<ProductDto.Response>>> getByArtisan(
             @PathVariable Long artisanId) {
@@ -66,7 +66,7 @@ public class ProductController {
     }
 
     @PutMapping("/api/artisan/products/{id}")
-    @PreAuthorize("hasAnyRole('ARTISAN', 'ADMIN')")
+    @PreAuthorize("hasAnyAuthority('ROLE_ARTISAN', 'ROLE_ADMIN')")
     @Operation(summary = "Update a product (Artisan)")
     public ResponseEntity<ApiResponse<ProductDto.Response>> update(
             @PathVariable Long id,
@@ -75,18 +75,9 @@ public class ProductController {
                 productService.update(id, request)));
     }
 
-    // ---- ADMIN endpoints ----
-
-    @GetMapping("/api/admin/products")
-    @PreAuthorize("hasRole('ADMIN')")
-    @Operation(summary = "Get ALL products (Admin only)")
-    public ResponseEntity<ApiResponse<List<ProductDto.Response>>> getAll() {
-        return ResponseEntity.ok(ApiResponse.success("All products retrieved",
-                productService.getAll()));
-    }
 
     @DeleteMapping("/api/admin/products/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @Operation(summary = "Delete a product (Admin only)")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id) {
         productService.delete(id);

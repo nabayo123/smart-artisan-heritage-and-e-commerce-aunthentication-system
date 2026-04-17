@@ -5,10 +5,12 @@ import com.korarwanda.kora.entity.Order;
 import com.korarwanda.kora.entity.Payment;
 import com.korarwanda.kora.enums.OrderStatus;
 import com.korarwanda.kora.enums.PaymentStatus;
+import com.korarwanda.kora.enums.ProductStatus;
 import com.korarwanda.kora.exception.BadRequestException;
 import com.korarwanda.kora.exception.ResourceNotFoundException;
 import com.korarwanda.kora.repository.OrderRepository;
 import com.korarwanda.kora.repository.PaymentRepository;
+import com.korarwanda.kora.repository.ProductRepository;
 import com.korarwanda.kora.service.PaymentService;
 import com.korarwanda.kora.util.HeritageTagUtil;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +26,7 @@ public class PaymentServiceImpl implements PaymentService {
 
     private final PaymentRepository paymentRepository;
     private final OrderRepository orderRepository;
+    private final ProductRepository productRepository;
     private final HeritageTagUtil heritageTagUtil;
 
     @Override
@@ -63,8 +66,15 @@ public class PaymentServiceImpl implements PaymentService {
         // Simulate gateway confirmation (in production, this would verify with MTN/Airtel API)
         payment.setPaymentStatus(PaymentStatus.SUCCESS);
         payment.getOrder().setOrderStatus(OrderStatus.PAID);
-        orderRepository.save(payment.getOrder());
+        
+        // Mark items as SOLD only now that payment is confirmed
+        payment.getOrder().getOrderItems().forEach(item -> {
+            var product = item.getProduct();
+            product.setStatus(ProductStatus.SOLD);
+            productRepository.save(product);
+        });
 
+        orderRepository.save(payment.getOrder());
         return toResponse(paymentRepository.save(payment));
     }
 

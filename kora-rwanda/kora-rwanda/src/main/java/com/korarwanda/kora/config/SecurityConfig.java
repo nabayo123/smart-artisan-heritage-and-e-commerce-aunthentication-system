@@ -100,11 +100,14 @@ public class SecurityConfig {
                     "/h2-console/**"
                 ).permitAll()
                 // Admin only
-                .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                .requestMatchers("/api/admin/**").hasAuthority("ROLE_ADMIN")
                 // Artisan endpoints
-                .requestMatchers("/api/artisan/**").hasAnyRole("ARTISAN", "ADMIN")
-                // Customer endpoints
-                .requestMatchers("/api/orders/**", "/api/payments/**").hasAnyRole("CUSTOMER", "ADMIN")
+                .requestMatchers("/api/artisan/**").hasAnyAuthority("ROLE_ARTISAN", "ROLE_ADMIN")
+                // Customer & Artisan purchase endpoints
+                .requestMatchers("/api/orders/**", "/api/payments/**").hasAnyAuthority("ROLE_CUSTOMER", "ROLE_ARTISAN", "ROLE_ADMIN")
+                // Cooperative endpoints
+                .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/cooperatives/**").permitAll()
+                .requestMatchers("/api/cooperatives/**").hasAuthority("ROLE_ADMIN")
                 // Everything else requires auth
                 .anyRequest().authenticated()
             );

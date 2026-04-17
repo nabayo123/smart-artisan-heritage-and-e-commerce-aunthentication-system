@@ -15,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 
 import java.util.HashMap;
 import java.util.List;
@@ -23,7 +24,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/admin")
-@PreAuthorize("hasRole('ADMIN')")
+@PreAuthorize("hasAuthority('ROLE_ADMIN')")
 @RequiredArgsConstructor
 @Tag(name = "Admin Dashboard", description = "Platform management, oversight and analytics")
 public class AdminController {
@@ -34,6 +35,7 @@ public class AdminController {
     private final ProductRepository productRepository;
     private final AdminRepository adminRepository;
     private final CooperativeRepository cooperativeRepository;
+    private final PaymentRepository paymentRepository;
     private final PasswordEncoder passwordEncoder;
 
     // ---- Dashboard Summary ----
@@ -45,10 +47,11 @@ public class AdminController {
         stats.put("totalArtisans", artisanRepository.count());
         stats.put("pendingArtisans", artisanRepository.countByVerificationStatus(VerificationStatus.PENDING));
         stats.put("approvedArtisans", artisanRepository.countByVerificationStatus(VerificationStatus.APPROVED));
-        stats.put("totalCustomers", customerRepository.count());
         stats.put("totalProducts", productRepository.count());
+        stats.put("pendingProducts", productRepository.countByStatus(com.korarwanda.kora.enums.ProductStatus.FLAGGED));
         stats.put("totalOrders", orderRepository.count());
         stats.put("totalCooperatives", cooperativeRepository.count());
+        stats.put("pendingCooperatives", cooperativeRepository.countByVerificationStatus(VerificationStatus.PENDING));
         
         java.math.BigDecimal revenue = orderRepository.getTotalRevenue();
         stats.put("totalRevenue", revenue != null ? revenue : java.math.BigDecimal.ZERO);
@@ -158,9 +161,11 @@ public class AdminController {
     @PostMapping("/create")
     @Operation(summary = "Create another admin account")
     public ResponseEntity<ApiResponse<Map<String, Object>>> createAdmin(
-            @RequestParam String fullName,
-            @RequestParam String email,
-            @RequestParam String password) {
+            @RequestBody Map<String, String> request) {
+        String fullName = request.get("fullName");
+        String email = request.get("email");
+        String password = request.get("password");
+
         if (adminRepository.existsByEmail(email))
             throw new BadRequestException("Admin email already exists: " + email);
         Admin admin = Admin.builder()
@@ -174,5 +179,62 @@ public class AdminController {
         result.put("email", admin.getEmail());
         result.put("fullName", admin.getFullName());
         return ResponseEntity.ok(ApiResponse.success("Admin account created", result));
+    }
+
+    @PostMapping("/customers")
+    @Operation(summary = "Admin: Manually register a new customer")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> adminCreateCustomer(
+            @Valid @RequestBody com.korarwanda.kora.dto.AuthDto.CustomerRegisterRequest request) {
+        if (customerRepository.existsByEmail(request.getEmail()))
+            throw new BadRequestException("Customer email already exists: " + request.getEmail());
+        
+        com.korarwanda.kora.entity.Customer customer = com.korarwanda.kora.entity.Customer.builder()
+                .fullName(request.getFullName())
+                .email(request.getEmail())
+                .password(passwordEncoder.encode(request.getPassword()))
+                .phone(request.getPhone())
+                .isVerified(true) // Admin creation bypasses email verification
+                .build();
+        
+        customer = customerRepository.save(customer);
+        Map<String, Object> result = new HashMap<>();
+        result.put("customerId", customer.getCustomerId());
+        result.put("fullName", customer.getFullName());
+        return ResponseEntity.ok(ApiResponse.success("Customer manually created by admin", result));
+    }
+
+    // ---- Payment Management ----
+
+    @GetMapping("/payments")
+    @Operation(summary = "Get all payments")
+    public ResponseEntity<ApiResponse<List<Map<String, Object>>>> getAllPayments() {
+        List<Map<String, Object>> result = paymentRepository.findAll().stream().map(p -> {
+            Map<String, Object> m = new HashMap<>();
+            m.put("paymentId", p.getPaymentId());
+            m.put("orderId", p.getOrder() != null ? p.getOrder().getOrderId() : null);
+            m.put("paymentMethod", p.getPaymentMethod());
+            m.put("status", p.getPaymentStatus());
+            m.put("transactionRef", p.getTransactionRef());
+            m.put("amount", p.getAmount());
+            return m;
+        }).collect(Collectors.toList());
+        return ResponseEntity.ok(ApiResponse.success("All payments retrieved", result));
+    }
+
+    // ---- Product Management (Mirrored for /api/admin route) ----
+
+    @GetMapping("/products")
+    @Operation(summary = "Get all products for management")
+    public ResponseEntity<ApiResponse<List<Map<String, Object>>>> getAllProducts() {
+        List<Map<String, Object>> result = productRepository.findAll().stream().map(p -> {
+            Map<String, Object> m = new HashMap<>();
+            m.put("productId", p.getProductId());
+            m.put("name", p.getName());
+            m.put("artisanName", p.getArtisan() != null ? p.getArtisan().getFullName() : "N/A");
+            m.put("category", p.getCategory());
+            m.put("price", p.getPrice());
+            return m;
+        }).collect(Collectors.toList());
+        return ResponseEntity.ok(ApiResponse.success("All products retrieved", result));
     }
 }

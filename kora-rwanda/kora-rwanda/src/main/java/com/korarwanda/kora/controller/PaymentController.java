@@ -22,7 +22,7 @@ public class PaymentController {
     private final PaymentService paymentService;
 
     @PostMapping("/initiate")
-    @PreAuthorize("hasAnyRole('CUSTOMER', 'ARTISAN', 'ADMIN')")
+    @PreAuthorize("hasAnyAuthority('ROLE_CUSTOMER', 'ROLE_ARTISAN', 'ROLE_ADMIN')")
     @Operation(summary = "Initiate a payment for an order")
     public ResponseEntity<ApiResponse<PaymentDto.Response>> initiate(
             @Valid @RequestBody PaymentDto.Request request) {
@@ -31,7 +31,7 @@ public class PaymentController {
     }
 
     @PostMapping("/{paymentId}/confirm")
-    @PreAuthorize("hasAnyRole('CUSTOMER', 'ARTISAN', 'ADMIN')")
+    @PreAuthorize("hasAnyAuthority('ROLE_CUSTOMER', 'ROLE_ARTISAN', 'ROLE_ADMIN')")
     @Operation(summary = "Confirm/simulate payment success (MoMo callback)")
     public ResponseEntity<ApiResponse<PaymentDto.Response>> confirm(@PathVariable Long paymentId) {
         return ResponseEntity.ok(ApiResponse.success(
@@ -48,7 +48,7 @@ public class PaymentController {
     }
 
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @Operation(summary = "Get all payments (Admin only)")
     public ResponseEntity<ApiResponse<List<PaymentDto.Response>>> getAll() {
         return ResponseEntity.ok(ApiResponse.success("All payments retrieved",
