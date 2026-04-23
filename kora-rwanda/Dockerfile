@@ -1,26 +1,21 @@
 # =========================================================
 # Stage 1 — BUILD: Maven + Java 17
 # =========================================================
-FROM eclipse-temurin:17-jdk-alpine AS builder
+FROM maven:3.8.5-openjdk-17-slim AS builder
 
 WORKDIR /app
 
-# Copy Maven wrapper and POM first (layer-cache dependencies)
+# Copy POM first (layer-cache dependencies)
 COPY pom.xml .
-COPY .mvn/ .mvn/
-COPY mvnw .
-
-# Make wrapper executable
-RUN chmod +x mvnw
 
 # Download all dependencies (cached unless pom.xml changes)
-RUN ./mvnw dependency:go-offline -B
+RUN mvn dependency:go-offline -B
 
 # Copy source code
 COPY src ./src
 
 # Build the fat JAR, skip tests (tests run in CI)
-RUN ./mvnw clean package -DskipTests -B
+RUN mvn clean package -DskipTests -B
 
 # =========================================================
 # Stage 2 — RUNTIME: minimal JRE
