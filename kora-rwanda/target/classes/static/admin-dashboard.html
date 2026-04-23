@@ -1,0 +1,1431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | Kora-Rwanda</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #d4a373;
+            --primary-dark: #bc8a5f;
+            --dark: #0f172a;
+            --card-bg: #1e293b;
+            --glass: rgba(255, 255, 255, 0.03);
+            --border: rgba(255, 255, 255, 0.08);
+            --text-muted: #94a3b8;
+            --bg-body: #0f172a;
+            --text-main: #ffffff;
+        }
+
+        body.light-mode {
+            --dark: #f8fafc;
+            --card-bg: #ffffff;
+            --glass: rgba(0, 0, 0, 0.02);
+            --border: rgba(0, 0, 0, 0.06);
+            --text-muted: #64748b;
+            --bg-body: #f1f5f9;
+            --text-main: #0f172a;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
+        body { background: var(--bg-body); color: var(--text-main); display: flex; min-height: 100vh; transition: background 0.3s, color 0.3s; }
+
+        /* Sidebar */
+        aside {
+            width: 280px;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid var(--border);
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+        }
+
+        .logo { font-size: 1.4rem; font-weight: 800; color: var(--primary); letter-spacing: -0.5px; margin-bottom: 2rem; }
+        .nav-items { list-style: none; display: flex; flex-direction: column; gap: 0.5rem; }
+        .nav-items li a {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            border-radius: 12px;
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+        .nav-items li a.active, .nav-items li a:hover {
+            background: var(--glass);
+            color: var(--primary);
+        }
+
+        /* Main Content */
+        main { flex: 1; padding: 3rem; overflow-y: auto; }
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 3rem; }
+        h1 { font-size: 2rem; font-weight: 800; }
+        .user-info { display: flex; align-items: center; gap: 1rem; }
+        .logout-btn {
+            margin-top: auto;
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.1);
+            padding: 1rem;
+            border-radius: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            text-decoration: none;
+        }
+        .logout-btn:hover {
+            background: #ef4444;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(239, 68, 68, 0.3);
+        }
+
+        /* Stats Grid */
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; margin-bottom: 3rem; }
+        .stat-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            padding: 1.5rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: transform 0.3s;
+        }
+        .stat-card:hover { transform: translateY(-5px); border-color: var(--primary); }
+        .stat-card h4 { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 1px; }
+        .stat-value { font-size: 2.2rem; font-weight: 800; color: white; }
+
+        /* Tables & Lists */
+        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; margin-top: 3rem; }
+        .section-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: left; background: rgba(255,255,255,0.02); padding: 1.2rem; font-size: 0.9rem; color: var(--text-muted); font-weight: 600; }
+        td { padding: 1.2rem; border-top: 1px solid var(--border); font-size: 0.95rem; }
+        .status-badge {
+            padding: 0.4rem 0.8rem;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .status-pending { background: rgba(234, 179, 8, 0.1); color: #eab308; }
+        .status-approved { background: rgba(34, 197, 94, 0.1); color: #22c55e; }
+        .action-btn { padding: 0.4rem 0.8rem; border-radius: 8px; border: none; cursor: pointer; font-size: 0.85rem; font-weight: 600; margin-right: 0.5rem; }
+        .approve-btn { background: #22c55e; color: white; }
+        .reject-btn { background: #ef4444; color: white; }
+
+        /* Action Buttons */
+        .run-btn {
+            background: var(--primary);
+            color: var(--dark);
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+        }
+        .run-btn:hover { background: var(--primary-dark); transform: scale(1.02); }
+        .hide-btn {
+            background: var(--glass);
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+            padding: 0.8rem 1.5rem;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+        }
+        .hide-btn:hover { background: rgba(255,255,255,0.05); color: white; }
+        
+        .tab-pane { display: none; }
+        .tab-pane.active { display: block; }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--text-muted);
+        }
+        .empty-state i { font-size: 3rem; display: block; margin-bottom: 1rem; opacity: 0.2; }
+
+        @keyframes pulse {
+            0% { transform: scale(0.95); opacity: 0.5; }
+            50% { transform: scale(1.1); opacity: 1; }
+            100% { transform: scale(0.95); opacity: 0.5; }
+        }
+
+        @media (max-width: 1024px) {
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+    <aside>
+        <div class="logo">KORA.RWANDA</div>
+        <ul class="nav-items">
+            <li><a href="/marketplace.html">Explore Marketplace</a></li>
+            <li><a href="#" class="active" onclick="switchTab('home', event)">🏠 Dashboard Home</a></li>
+            <li><a href="#" onclick="switchTab('overview', event)">📈 Platform Overview</a></li>
+            <li><a href="#" onclick="switchTab('artisans', event)">👤 Artisan Management</a></li>
+            <li><a href="#" onclick="switchTab('customers', event)">👥 Customer Management</a></li>
+            <li><a href="#" onclick="switchTab('cooperatives', event)">🏢 Cooperatives</a></li>
+            <li><a href="#" onclick="switchTab('products', event)">📦 Product Moderation</a></li>
+            <li><a href="#" onclick="switchTab('orders', event)">🧾 Global Orders</a></li>
+            <li><a href="#" onclick="switchTab('payments', event)">💳 Master Payments</a></li>
+            <li><a href="#" onclick="switchTab('settings', event)">🛡️ Security & Admins</a></li>
+        </ul>
+
+        <div style="margin-top: 2rem; padding: 1rem; background: var(--glass); border-radius: 12px; display: flex; align-items: center; justify-content: space-between;">
+            <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">Theme Mode</span>
+            <button onclick="toggleTheme()" style="background: var(--primary); color: var(--dark); border: none; padding: 0.4rem 0.8rem; border-radius: 8px; font-weight: 800; cursor: pointer; font-size: 0.75rem;">🌓 Toggle</button>
+        </div>
+
+        <button class="logout-btn" onclick="logout()">Secure Logout 🔒</button>
+    </aside>
+
+    <main>
+        <header>
+            <div>
+                <h1 id="tab-title">Welcome back, Admin</h1>
+                <p style="color: var(--text-muted);" id="tab-subtitle">Select a module to begin managing the platform.</p>
+            </div>
+            <div class="user-info">
+                <div class="search-container" style="margin-right: 1rem;">
+                    <input type="text" id="global-search" placeholder="🔍 Search records..." onkeyup="filterTable(this.value)" 
+                           style="padding: 0.7rem 1.2rem; border-radius: 10px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: white; width: 220px; font-size: 0.9rem;">
+                </div>
+                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                    <select id="run-module-select" style="background: var(--glass); color: white; border: 1px solid var(--border); padding: 0.7rem; border-radius: 10px; outline: none; cursor: pointer; font-size: 0.85rem;">
+                        <option value="" disabled selected>Select Table to Run</option>
+                        <option value="artisans">Artisans</option>
+                        <option value="customers">Customers</option>
+                        <option value="cooperatives">Cooperatives</option>
+                        <option value="products">Products</option>
+                        <option value="orders">Orders</option>
+                        <option value="payments">Payments</option>
+                        <option value="admins">Admins</option>
+                        <option value="all">Sync All</option>
+                    </select>
+                    <button class="run-btn" onclick="executeSelectedRun()">▶ Run</button>
+                </div>
+                <span id="user-name" style="font-weight: 600; color: var(--primary); margin-left: 1.5rem;">Admin User</span>
+            </div>
+        </header>
+
+        <!-- HOME TAB -->
+        <section id="home-tab" class="tab-pane active">
+            <div class="section-card" style="padding: 4rem 2rem; text-align: center; background: linear-gradient(145deg, var(--card-bg), rgba(212, 163, 115, 0.05));">
+                <div style="font-size: 4rem; margin-bottom: 2rem;">🇷🇼</div>
+                <h2 style="font-size: 2.5rem; margin-bottom: 1rem;">Kora-Rwanda Command Center</h2>
+                <p style="color: var(--text-muted); max-width: 600px; margin: 0 auto 3rem; line-height: 1.8;">
+                    Welcome to the secure administrative interface. To maintain peak performance and data privacy, 
+                    dashboard modules are kept in a dormant state until explicitly requested. 
+                    Select a category from the sidebar and use the <strong>"Run/Load"</strong> buttons to fetch live data.
+                </p>
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; max-width: 900px; margin: 0 auto; text-align: left;">
+                    <div style="background: var(--glass); padding: 1.5rem; border-radius: 15px; border: 1px solid var(--border);">
+                        <h4 style="color: var(--primary); margin-bottom: 0.5rem;">Secure Access</h4>
+                        <p style="font-size: 0.85rem; color: var(--text-muted);">All administrative actions are logged and verified via cryptographic tokens.</p>
+                    </div>
+                    <div style="background: var(--glass); padding: 1.5rem; border-radius: 15px; border: 1px solid var(--border);">
+                        <h4 style="color: var(--primary); margin-bottom: 0.5rem;">Live Sync</h4>
+                        <p style="font-size: 0.85rem; color: var(--text-muted);">Real-time connection to the master artisan and customer databases.</p>
+                    </div>
+                    <div style="background: var(--glass); padding: 1.5rem; border-radius: 15px; border: 1px solid var(--border);">
+                        <h4 style="color: var(--primary); margin-bottom: 0.5rem;">Heritage Verification</h4>
+                        <p style="font-size: 0.85rem; color: var(--text-muted);">Moderate and verify artisan heritage tags across the entire platform.</p>
+                    </div>
+                </div>
+
+                <!-- NEW TASK HUB -->
+                <div id="task-hub" style="margin-top: 4rem; text-align: left;">
+                    <h3 style="margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.8rem;">
+                        <span style="background: #ef4444; width: 12px; height: 12px; border-radius: 50%; display: inline-block; animation: pulse 2s infinite;"></span>
+                        Pending Tasks (Needs Attention)
+                    </h3>
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
+                        <div class="stat-card" style="cursor: pointer;" onclick="switchTab('artisans', event)">
+                            <h4 id="pending-artisans-task">Artisans to Verify</h4>
+                            <div class="stat-value" id="count-pending-artisans">0</div>
+                        </div>
+                        <div class="stat-card" style="cursor: pointer;" onclick="switchTab('cooperatives', event)">
+                            <h4 id="pending-coops-task">Pending Cooperatives</h4>
+                            <div class="stat-value" id="count-pending-coops">0</div>
+                        </div>
+                        <div class="stat-card" style="cursor: pointer;" onclick="switchTab('products', event)">
+                            <h4 id="pending-products-task">Flagged Products</h4>
+                            <div class="stat-value" id="count-pending-products">0</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            </div>
+        </section>
+
+        <!-- OVERVIEW TAB -->
+        <section id="overview-tab" class="tab-pane">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem;">
+                <div>
+                    <h2 style="font-size: 1.5rem; margin-bottom: 0.5rem;">Dashboard Analytics</h2>
+                    <p style="color: var(--text-muted);">Activate to view platform-wide performance metrics.</p>
+                </div>
+                <div style="display: flex; gap: 1rem;">
+                    <button class="run-btn" id="btn-stats-run" onclick="loadStats()">🚀 Run Analysis</button>
+                    <button class="hide-btn" id="btn-stats-toggle" onclick="toggleSection('stats-container')" style="display: none;">👁️ Show/Hide</button>
+                </div>
+            </div>
+
+            <div class="stats-grid" id="stats-container" style="display: none;">
+                <!-- Cards will be injected here -->
+            </div>
+
+            <div id="stats-placeholder" class="section-card empty-state">
+                <p id="stats-msg">System analysis is currently dormant. Click 'Run Analysis' to fetch live data.</p>
+                <button class="run-btn" style="margin: 1rem auto;" onclick="loadStats()">🚀 Activate Dashboard</button>
+            </div>
+
+            <div class="section-header">
+                <h2>System Health</h2>
+            </div>
+            <div class="section-card" style="padding: 2rem;">
+                <p style="color: var(--text-muted); line-height: 1.6;">Database connected. Security protocols active. Heritage verification processing is operational. Select a module from the sidebar and click its activation button to manage specific platform components.</p>
+            </div>
+        </section>
+
+        <!-- ARTISANS TAB -->
+        <section id="artisans-tab" class="tab-pane">
+            <div class="section-header">
+                <div>
+                    <h3>Artisan Registry</h3>
+                    <p style="color: var(--text-muted);">Review pending artisan registrations.</p>
+                </div>
+                <div style="display: flex; gap: 1rem;">
+                    <button class="hide-btn" id="btn-artisans-toggle" onclick="toggleSection('artisans-data-wrapper')" style="display: none;">👁️ Toggle</button>
+                </div>
+            </div>
+            <div id="artisans-data-wrapper" style="display: none;">
+                <div class="section-card">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Artisan Name</th>
+                                <th>Location</th>
+                                <th>Email</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="artisan-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+            <div id="artisans-placeholder" class="section-card empty-state">
+                <p id="artisans-msg">Verification data is hidden. Click 'Fetch Queue' to load pending requests.</p>
+            </div>
+        </section>
+
+        <!-- CUSTOMERS TAB -->
+        <section id="customers-tab" class="tab-pane">
+            <div style="display: grid; grid-template-columns: 1fr 350px; gap: 2rem;">
+                <!-- Customer List -->
+                <div>
+                    <div class="section-header" style="margin-top: 0;">
+                        <div>
+                            <h3>Customer Database</h3>
+                            <p style="color: var(--text-muted);">Manage platform buyers and privileges.</p>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button class="hide-btn" id="btn-customers-toggle" onclick="toggleSection('customers-data-wrapper')" style="display: none;">👁️ Toggle</button>
+                        </div>
+                    </div>
+                    <div id="customers-data-wrapper" style="display: none;">
+                        <div class="section-card">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Customer Name</th>
+                                        <th>Email</th>
+                                        <th>Phone</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="customer-table-body"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div id="customers-placeholder" class="section-card empty-state">
+                        <p id="customers-msg">Customer registry is hidden. Click 'Load Customers' to sync with database.</p>
+                    </div>
+                </div>
+
+                <!-- Create Customer Form -->
+                <div>
+                    <div class="section-card" style="padding: 2rem; position: sticky; top: 2rem;">
+                        <h3 style="margin-bottom: 1.5rem; color: var(--primary);">Add Customer Manually</h3>
+                        <form id="create-customer-form" onsubmit="createCustomer(event)">
+                            <div style="margin-bottom: 1rem;">
+                                <label style="display:block; margin-bottom:0.5rem; font-size:0.8rem; color:var(--text-muted);">Full Name</label>
+                                <input type="text" id="cust-name" required style="width:100%; padding:0.8rem; border-radius:8px; background:var(--glass); border:1px solid var(--border); color:var(--text-main);">
+                            </div>
+                            <div style="margin-bottom: 1rem;">
+                                <label style="display:block; margin-bottom:0.5rem; font-size:0.8rem; color:var(--text-muted);">Email Address</label>
+                                <input type="email" id="cust-email" required style="width:100%; padding:0.8rem; border-radius:8px; background:var(--glass); border:1px solid var(--border); color:var(--text-main);">
+                            </div>
+                            <div style="margin-bottom: 1rem;">
+                                <label style="display:block; margin-bottom:0.5rem; font-size:0.8rem; color:var(--text-muted);">Password</label>
+                                <input type="password" id="cust-pass" required minlength="6" style="width:100%; padding:0.8rem; border-radius:8px; background:var(--glass); border:1px solid var(--border); color:var(--text-main);">
+                            </div>
+                            <button type="submit" style="width:100%; background:var(--primary); color:var(--dark); border:none; padding:1rem; border-radius:12px; font-weight:800; cursor:pointer;">Register Customer</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- COOPERATIVES TAB -->
+        <section id="cooperatives-tab" class="tab-pane">
+            <div style="display: grid; grid-template-columns: 1fr 350px; gap: 2rem;">
+                <div id="cooperatives-data-container" style="display: none;">
+                    <div class="section-header">
+                        <h3>Cooperative Oversight</h3>
+                    </div>
+                    <div class="section-card">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Province</th>
+                                    <th>District</th>
+                                    <th>Contact</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="cooperative-table-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div id="cooperatives-placeholder" class="section-card empty-state" style="flex: 1;">
+                    <p id="cooperatives-msg">Collective data is dormant. Use the control bar to fetch information.</p>
+                    <button class="run-btn" id="btn-cooperatives-run" style="margin: 1rem auto;" onclick="loadCooperatives()">🏗️ Load Collectives</button>
+                    <button class="hide-btn" id="btn-cooperatives-toggle" onclick="toggleSection('cooperatives-data-container')" style="display: none; margin: 0 auto;">👁️ Toggle View</button>
+                </div>
+
+                <div class="section-card" style="padding: 2rem;">
+                    <h3 style="margin-bottom: 1.5rem;">Add New Collective</h3>
+                    <form id="coop-form" onsubmit="createCooperative(event)">
+                        <div style="margin-bottom: 1rem;">
+                            <label style="display:block; margin-bottom:0.5rem; font-size:0.8rem; color:var(--text-muted);">Collective Name</label>
+                            <input type="text" id="coop-name" required placeholder="e.g. Abahuzamugambi" style="width:100%; padding:0.8rem; border-radius:8px; background:var(--glass); border:1px solid var(--border); color:var(--text-main);">
+                        </div>
+                        <div style="margin-bottom: 1rem;">
+                            <label style="display:block; margin-bottom:0.5rem; font-size:0.8rem; color:var(--text-muted);">Province</label>
+                            <select id="coop-province" required style="width:100%; padding:0.8rem; border-radius:8px; background:var(--glass); border:1px solid var(--border); color:var(--text-main);">
+                                <option value="Kigali">Kigali</option>
+                                <option value="Northern">Northern</option>
+                                <option value="Southern">Southern</option>
+                                <option value="Western">Western</option>
+                                <option value="Eastern">Eastern</option>
+                            </select>
+                        </div>
+                        <div style="margin-bottom: 1.5rem;">
+                            <label style="display:block; margin-bottom:0.5rem; font-size:0.8rem; color:var(--text-muted);">Contact Phone</label>
+                            <input type="text" id="coop-phone" required placeholder="+250..." style="width:100%; padding:0.8rem; border-radius:8px; background:var(--glass); border:1px solid var(--border); color:var(--text-main);">
+                        </div>
+                        <button type="submit" id="btn-coop-submit" style="width:100%; background:var(--primary); color:var(--dark); border:none; padding:1rem; border-radius:12px; font-weight:800; cursor:pointer;">Register Collective</button>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <!-- PRODUCTS TAB -->
+        <section id="products-tab" class="tab-pane">
+            <div class="section-header">
+                <div>
+                    <h3>Product Inventory</h3>
+                    <p style="color: var(--text-muted);">Moderate and monitor live product listings.</p>
+                </div>
+                <div style="display: flex; gap: 1rem;">
+                    <button class="hide-btn" id="btn-products-toggle" onclick="toggleSection('products-data-wrapper')" style="display: none;">👁️ Toggle</button>
+                </div>
+            </div>
+            <div id="products-data-wrapper" style="display: none;">
+                <div class="section-card">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Product Name</th>
+                                <th>Artisan</th>
+                                <th>Category</th>
+                                <th>Price</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="product-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+            <div id="products-placeholder" class="section-card empty-state">
+                <p id="products-msg">Product data is currently hidden. Click 'Load Inventory' to view listings.</p>
+            </div>
+        </section>
+
+        <!-- ORDERS TAB -->
+        <section id="orders-tab" class="tab-pane">
+            <div class="section-header">
+                <div>
+                    <h3>System Orders</h3>
+                    <p style="color: var(--text-muted);">Track all transactions and heritage deliveries.</p>
+                </div>
+                <div style="display: flex; gap: 1rem;">
+                    <button class="hide-btn" id="btn-orders-toggle" onclick="toggleSection('orders-data-wrapper')" style="display: none;">👁️ Toggle</button>
+                </div>
+            </div>
+            <div id="orders-data-wrapper" style="display: none;">
+                <div class="section-card">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Customer</th>
+                                <th>Total</th>
+                                <th>Status</th>
+                                <th>Order Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="order-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+            <div id="orders-placeholder" class="section-card empty-state">
+                <p id="orders-msg">Order history is hidden. Click 'Fetch Orders' to retrieve transaction logs.</p>
+            </div>
+        </section>
+        <!-- PAYMENTS TAB -->
+        <section id="payments-tab" class="tab-pane">
+            <div class="section-header">
+                <div>
+                    <h3>Financial Logs</h3>
+                    <p style="color: var(--text-muted);">Monitor all MoMo and Airtel Money transactions across the platform.</p>
+                </div>
+                <div style="display: flex; gap: 1rem;">
+                    <button class="hide-btn" id="btn-payments-toggle" onclick="toggleSection('payments-data-wrapper')" style="display: none;">👁️ Toggle</button>
+                </div>
+            </div>
+            <div id="payments-data-wrapper" style="display: none;">
+                <div class="section-card">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Transaction ID</th>
+                                <th>Order</th>
+                                <th>Method</th>
+                                <th>Reference</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="payment-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+            <div id="payments-placeholder" class="section-card empty-state">
+                <p id="payments-msg">Financial logs are dormant. Click 'Fetch Payments' to retrieve latest transactions.</p>
+            </div>
+        </section>
+
+        <section id="settings-tab" class="tab-pane">
+            <div class="section-header">
+                <div>
+                    <h2>Platform Administration</h2>
+                    <p style="color: var(--text-muted);">Manage high-level security and administrative personnel.</p>
+                </div>
+                    <button class="hide-btn" id="btn-admins-toggle" onclick="toggleSection('admins-data-wrapper')" style="display: none;">👁️ Toggle</button>
+                </div>
+            </div>
+
+            <div id="admins-data-wrapper" style="display: none; margin-bottom: 2rem;">
+                <div class="section-card">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Admin Name</th>
+                                <th>Email</th>
+                                <th>Role</th>
+                                <th>Authorized On</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="admins-placeholder" class="section-card empty-state" style="margin-bottom: 2rem;">
+                <p id="admins-msg">Administrator logs are dormant. Click 'Load Admins' to verify system access history.</p>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                
+                <!-- Update Admin Password -->
+                <div class="section-card" style="padding: 2rem;">
+                    <h3 style="margin-bottom: 1.5rem; color: var(--primary);">Update Security Credentials</h3>
+                    <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 2rem;">Change your administrative password regularly to maintain platform security.</p>
+                    
+                    <form id="admin-security-form" onsubmit="updateAdminPassword(event)">
+                        <div style="margin-bottom: 1rem;">
+                            <label style="display:block; margin-bottom:0.5rem; font-size:0.8rem; color:var(--text-muted);">Current Password</label>
+                            <input type="password" id="admin-current-pass" required style="width:100%; padding:0.8rem; border-radius:8px; background:rgba(255,255,255,0.05); border:1px solid var(--border); color:white;">
+                        </div>
+                        <div style="margin-bottom: 1rem;">
+                            <label style="display:block; margin-bottom:0.5rem; font-size:0.8rem; color:var(--text-muted);">New Password</label>
+                            <input type="password" id="admin-new-pass" required minlength="6" style="width:100%; padding:0.8rem; border-radius:8px; background:rgba(255,255,255,0.05); border:1px solid var(--border); color:white;">
+                        </div>
+                        <div style="margin-bottom: 1.5rem;">
+                            <label style="display:block; margin-bottom:0.5rem; font-size:0.8rem; color:var(--text-muted);">Confirm New Password</label>
+                            <input type="password" id="admin-confirm-pass" required minlength="6" style="width:100%; padding:0.8rem; border-radius:8px; background:rgba(255,255,255,0.05); border:1px solid var(--border); color:white;">
+                        </div>
+                        <button type="submit" style="width:100%; background:var(--primary); color:var(--dark); border:none; padding:1rem; border-radius:12px; font-weight:800; cursor:pointer;">Update Password</button>
+                    </form>
+                </div>
+
+                <!-- Register Sub-Admin -->
+                <div class="section-card" style="padding: 2rem;">
+                    <h3 style="margin-bottom: 1.5rem; color: #22c55e;">Register New Admin</h3>
+                    <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 2rem;">Grant elevated administrative access to a new user account.</p>
+                    
+                    <form id="create-admin-form" onsubmit="createAdminUser(event)">
+                        <div style="margin-bottom: 1rem;">
+                            <label style="display:block; margin-bottom:0.5rem; font-size:0.8rem; color:var(--text-muted);">Admin Full Name</label>
+                            <input type="text" id="new-admin-name" required style="width:100%; padding:0.8rem; border-radius:8px; background:rgba(255,255,255,0.05); border:1px solid var(--border); color:white;">
+                        </div>
+                        <div style="margin-bottom: 1rem;">
+                            <label style="display:block; margin-bottom:0.5rem; font-size:0.8rem; color:var(--text-muted);">Official Email</label>
+                            <input type="email" id="new-admin-email" required style="width:100%; padding:0.8rem; border-radius:8px; background:rgba(255,255,255,0.05); border:1px solid var(--border); color:white;">
+                        </div>
+                        <div style="margin-bottom: 1.5rem;">
+                            <label style="display:block; margin-bottom:0.5rem; font-size:0.8rem; color:var(--text-muted);">Temporary Password</label>
+                            <input type="password" id="new-admin-pass" required minlength="6" style="width:100%; padding:0.8rem; border-radius:8px; background:rgba(255,255,255,0.05); border:1px solid var(--border); color:white;">
+                        </div>
+                        <button type="submit" style="width:100%; background:rgba(34, 197, 94, 0.1); color:#22c55e; border:1px solid rgba(34, 197, 94, 0.4); padding:1rem; border-radius:12px; font-weight:800; cursor:pointer;">Authorize Admin Access</button>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        const token = localStorage.getItem('kora_token');
+        const user = JSON.parse(localStorage.getItem('kora_user'));
+
+        if (!token || user.role !== 'ROLE_ADMIN') {
+            window.location.href = '/login.html';
+        }
+
+        document.getElementById('user-name').textContent = user.fullName;
+
+        function switchTab(tabId, event) {
+            // Update Title
+            const titles = { 
+                home: 'Dashboard Home',
+                overview: 'Platform Overview', 
+                artisans: 'Artisan Management', 
+                customers: 'Customer Management',
+                cooperatives: 'Artisan Collectives',
+                products: 'Product Moderation', 
+                orders: 'Global Orders',
+                payments: 'Financial Oversight',
+                settings: 'Security & Admins'
+            };
+            const subtitles = {
+                home: 'Select a module to begin managing the platform.',
+                overview: 'Real-time monitoring and administrative tools.',
+                artisans: 'Review pending artisan registrations and valid profiles.',
+                customers: 'Manage platform buyers and account privileges.',
+                cooperatives: 'Oversee regional artisan collectives and cooperatives.',
+                products: 'Moderate and monitor live product listings.',
+                orders: 'Track all transactions and heritage deliveries.',
+                payments: 'Monitor secure MoMo and Airtel platform transactions.',
+                settings: 'Maintain administrative security and access control.'
+            };
+            document.getElementById('tab-title').textContent = titles[tabId] || 'Dashboard';
+            document.getElementById('tab-subtitle').textContent = subtitles[tabId] || '';
+
+            // Update Nav Links
+            document.querySelectorAll('.nav-items a').forEach(a => a.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+
+            // Update Tab Panes
+            document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+            document.getElementById(tabId + '-tab').classList.add('active');
+
+            if (tabId === 'home') refreshTaskHub();
+            if (tabId === 'overview') loadStats();
+            if (tabId === 'artisans') loadArtisans();
+            if (tabId === 'customers') loadCustomers();
+            if (tabId === 'cooperatives') loadCooperatives();
+            if (tabId === 'products') loadProducts();
+            if (tabId === 'orders') loadOrders();
+            if (tabId === 'payments') loadPayments();
+            if (tabId === 'settings') loadAdmins();
+        }
+
+        async function executeSelectedRun() {
+            const val = document.getElementById('run-module-select').value;
+            if (!val) {
+                alert('Please select a table to run.');
+                return;
+            }
+            
+            const btn = event?.currentTarget;
+            if (btn) {
+                btn.disabled = true;
+                btn.textContent = '...';
+            }
+
+            try {
+                if (val === 'all') {
+                    await loadAllData();
+                } else {
+                    switchTab(val, { currentTarget: document.querySelector(`[onclick*="switchTab('${val}'"]`) });
+                    if (val === 'artisans') await loadArtisans();
+                    if (val === 'customers') await loadCustomers();
+                    if (val === 'cooperatives') await loadCooperatives();
+                    if (val === 'products') await loadProducts();
+                    if (val === 'orders') await loadOrders();
+                    if (val === 'payments') await loadPayments();
+                    if (val === 'admins') await loadAdmins();
+                }
+            } finally {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.textContent = '▶ Run';
+                }
+            }
+        }
+
+        function filterTable(query) {
+            const activeTab = document.querySelector('.tab-pane.active');
+            if (!activeTab) return;
+            
+            const rows = activeTab.querySelectorAll('tbody tr');
+            const q = query.toLowerCase();
+            
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(q) ? '' : 'none';
+            });
+        }
+
+        async function loadAllData() {
+            const btn = event?.currentTarget;
+            if(btn) {
+                btn.disabled = true; 
+                btn.textContent = 'Syncing...';
+            }
+            try {
+                await Promise.all([
+                    refreshTaskHub(),
+                    loadStats(),
+                    loadArtisans(),
+                    loadCustomers(),
+                    loadCooperatives(),
+                    loadProducts(),
+                    loadOrders(),
+                    loadPayments(),
+                    loadAdmins()
+                ]);
+            } finally {
+                if(btn) {
+                    btn.disabled = false;
+                    btn.textContent = '🔄 Sync All Modules';
+                }
+            }
+        }
+
+        async function refreshTaskHub() {
+            try {
+                const res = await fetch('/api/admin/dashboard/stats', { headers: { 'Authorization': 'Bearer ' + token } });
+                const result = await res.json();
+                if (result.success) {
+                    const s = result.data;
+                    document.getElementById('count-pending-artisans').textContent = s.pendingArtisans || 0;
+                    document.getElementById('count-pending-coops').textContent = s.pendingCooperatives || 0;
+                    document.getElementById('count-pending-products').textContent = s.pendingProducts || 0;
+                    
+                    // Style updates for priority
+                    document.getElementById('count-pending-artisans').style.color = s.pendingArtisans > 0 ? '#ef4444' : 'inherit';
+                }
+            } catch (err) { console.error('Task Hub Sync Failed'); }
+        }
+
+        function toggleSection(id) {
+            const el = document.getElementById(id);
+            const isVisible = el.style.display !== 'none';
+            if (isVisible) {
+                hideSection(id);
+            } else {
+                showSection(id);
+            }
+        }
+
+        // Inline Editing Helpers
+        function startEditCustomer(id, name, phone) {
+            const row = document.getElementById(`customer-row-${id}`);
+            row.querySelector('.name-cell').innerHTML = `<input type="text" id="edit-c-name-${id}" value="${name}" style="width:100%; padding:0.4rem; background:rgba(255,255,255,0.1); border:1px solid var(--primary); color:white; border-radius:5px;">`;
+            row.querySelector('.phone-cell').innerHTML = `<input type="text" id="edit-c-phone-${id}" value="${phone}" style="width:100%; padding:0.4rem; background:rgba(255,255,255,0.1); border:1px solid var(--primary); color:white; border-radius:5px;">`;
+            row.querySelector('.action-cell').innerHTML = `
+                <div style="display: flex; gap: 0.3rem;">
+                    <button class="action-btn approve-btn" onclick="saveEditCustomer(${id})">Save</button>
+                    <button class="action-btn reject-btn" onclick="loadCustomers()">Cancel</button>
+                </div>
+            `;
+        }
+
+        async function saveEditCustomer(id) {
+            const name = document.getElementById(`edit-c-name-${id}`).value;
+            const phone = document.getElementById(`edit-c-phone-${id}`).value;
+            try {
+                const res = await fetch(`/api/admin/customers/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                    body: JSON.stringify({ fullName: name, phone: phone })
+                });
+                if ((await res.json()).success) loadCustomers();
+            } catch (err) { console.error(err); }
+        }
+
+        function startEditProduct(id, name, cat, price, status) {
+            const row = document.getElementById(`product-row-${id}`);
+            row.querySelector('.name-cell').innerHTML = `<input type="text" id="edit-p-name-${id}" value="${name}" style="width:100%; padding:0.4rem; background:rgba(255,255,255,0.1); border:1px solid var(--primary); color:white; border-radius:5px;">`;
+            row.querySelector('.category-cell').innerHTML = `<input type="text" id="edit-p-cat-${id}" value="${cat}" style="width:100%; padding:0.4rem; background:rgba(255,255,255,0.1); border:1px solid var(--primary); color:white; border-radius:5px;">`;
+            row.querySelector('.price-cell').innerHTML = `<input type="number" id="edit-p-price-${id}" value="${price}" style="width:100%; padding:0.4rem; background:rgba(255,255,255,0.1); border:1px solid var(--primary); color:white; border-radius:5px;">`;
+            row.querySelector('.status-cell').innerHTML = `
+                <select id="edit-p-status-${id}" style="width:100%; padding:0.4rem; background:var(--dark); border:1px solid var(--primary); color:white; border-radius:5px;">
+                    <option value="AVAILABLE" ${status === 'AVAILABLE' ? 'selected' : ''}>AVAILABLE</option>
+                    <option value="SOLD_OUT" ${status === 'SOLD_OUT' ? 'selected' : ''}>SOLD_OUT</option>
+                    <option value="FLAGGED" ${status === 'FLAGGED' ? 'selected' : ''}>FLAGGED</option>
+                </select>
+            `;
+            row.querySelector('.action-cell').innerHTML = `
+                <div style="display: flex; gap: 0.3rem;">
+                    <button class="action-btn approve-btn" onclick="saveEditProduct(${id})">Save</button>
+                    <button class="action-btn reject-btn" onclick="loadProducts()">Cancel</button>
+                </div>
+            `;
+        }
+
+        async function saveEditProduct(id) {
+            const data = {
+                name: document.getElementById(`edit-p-name-${id}`).value,
+                category: document.getElementById(`edit-p-cat-${id}`).value,
+                price: document.getElementById(`edit-p-price-${id}`).value,
+                status: document.getElementById(`edit-p-status-${id}`).value
+            };
+            try {
+                const res = await fetch(`/api/admin/products/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                    body: JSON.stringify(data)
+                });
+                if ((await res.json()).success) loadProducts();
+            } catch (err) { console.error(err); }
+        }
+
+        function startEditCoop(id, name, prov, dist, phone, status) {
+            const row = document.getElementById(`coop-row-${id}`);
+            row.querySelector('.name-cell').innerHTML = `<input type="text" id="edit-co-name-${id}" value="${name}" style="width:100%; padding:0.4rem; background:rgba(255,255,255,0.1); border:1px solid var(--primary); color:white; border-radius:5px;">`;
+            row.querySelector('.province-cell').innerHTML = `<input type="text" id="edit-co-prov-${id}" value="${prov}" style="width:100%; padding:0.4rem; background:rgba(255,255,255,0.1); border:1px solid var(--primary); color:white; border-radius:5px;">`;
+            row.querySelector('.district-cell').innerHTML = `<input type="text" id="edit-co-dist-${id}" value="${dist}" style="width:100%; padding:0.4rem; background:rgba(255,255,255,0.1); border:1px solid var(--primary); color:white; border-radius:5px;">`;
+            row.querySelector('.phone-cell').innerHTML = `<input type="text" id="edit-co-phone-${id}" value="${phone}" style="width:100%; padding:0.4rem; background:rgba(255,255,255,0.1); border:1px solid var(--primary); color:white; border-radius:5px;">`;
+            row.querySelector('.action-cell').innerHTML = `
+                <div style="display: flex; gap: 0.3rem;">
+                    <button class="action-btn approve-btn" onclick="saveEditCoop(${id})">Save</button>
+                    <button class="action-btn reject-btn" onclick="loadCooperatives()">Cancel</button>
+                </div>
+            `;
+        }
+
+        async function saveEditCoop(id) {
+            const data = {
+                name: document.getElementById(`edit-co-name-${id}`).value,
+                province: document.getElementById(`edit-co-prov-${id}`).value,
+                district: document.getElementById(`edit-co-dist-${id}`).value,
+                contactPhone: document.getElementById(`edit-co-phone-${id}`).value
+            };
+            try {
+                const res = await fetch(`/api/admin/cooperatives/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                    body: JSON.stringify(data)
+                });
+                if ((await res.json()).success) loadCooperatives();
+            } catch (err) { console.error(err); }
+        }
+
+        function startEditArtisan(id, name, location) {
+            const row = document.getElementById(`artisan-row-${id}`);
+            row.querySelector('.name-cell').innerHTML = `<input type="text" id="edit-a-name-${id}" value="${name}" style="width:100%; padding:0.4rem; background:rgba(255,255,255,0.1); border:1px solid var(--primary); color:white; border-radius:5px;">`;
+            row.querySelector('.location-cell').innerHTML = `<input type="text" id="edit-a-loc-${id}" value="${location}" style="width:100%; padding:0.4rem; background:rgba(255,255,255,0.1); border:1px solid var(--primary); color:white; border-radius:5px;">`;
+            row.querySelector('.action-cell').innerHTML = `
+                <div style="display: flex; gap: 0.3rem;">
+                    <button class="action-btn approve-btn" onclick="saveEditArtisan(${id})">Save</button>
+                    <button class="action-btn reject-btn" onclick="loadArtisans()">Cancel</button>
+                </div>
+            `;
+        }
+
+        async function saveEditArtisan(id) {
+            const data = {
+                fullName: document.getElementById(`edit-a-name-${id}`).value,
+                districtVillage: document.getElementById(`edit-a-loc-${id}`).value
+            };
+            try {
+                const res = await fetch(`/api/admin/artisans/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                    body: JSON.stringify(data)
+                });
+                if ((await res.json()).success) loadArtisans();
+            } catch (err) { console.error(err); }
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).style.display = 'none';
+        }
+
+        function hideSection(id) {
+            const el = document.getElementById(id);
+            el.style.display = 'none';
+            // Also handle placeholders and messages
+            const placeholderId = id.replace('-data-wrapper', '-placeholder').replace('-data-container', '-placeholder').replace('stats-container', 'stats-placeholder');
+            const msgId = id.replace('-data-wrapper', '-msg').replace('-data-container', '-msg').replace('stats-container', 'stats-msg');
+            
+            const placeholder = document.getElementById(placeholderId);
+            const msg = document.getElementById(msgId);
+            
+            if (placeholder) placeholder.style.display = 'block';
+            if (msg) msg.textContent = "Data is currently collapsed/hidden. Click 'Toggle' to see it again.";
+        }
+
+        function toggleSection(id) {
+            const el = document.getElementById(id);
+            const placeholderId = id.replace('-data-wrapper', '-placeholder').replace('-data-container', '-placeholder').replace('stats-container', 'stats-placeholder');
+            const placeholder = document.getElementById(placeholderId);
+            
+            if (el.style.display === 'none') {
+                el.style.display = id === 'stats-container' || id === 'admins-data-wrapper' ? (id === 'stats-container' ? 'grid' : 'block') : 'block';
+                if (placeholder) placeholder.style.display = 'none';
+            } else {
+                el.style.display = 'none';
+                if (placeholder) placeholder.style.display = 'flex';
+            }
+        }
+
+        function showSection(id) {
+            const el = document.getElementById(id);
+            el.style.display = id === 'stats-container' || id === 'admins-data-wrapper' ? (id === 'stats-container' ? 'grid' : 'block') : 'block';
+            
+            // Fix: ensure block display for wrapper if not stats
+            if (id === 'admins-data-wrapper') el.style.display = 'block';
+            
+            const placeholderId = id.replace('-data-wrapper', '-placeholder').replace('-data-container', '-placeholder').replace('stats-container', 'stats-placeholder');
+            const placeholder = document.getElementById(placeholderId);
+            if (placeholder) placeholder.style.display = 'none';
+            
+            // Show the toggle button once data is loaded
+            const toggleBtnId = 'btn-' + id.split('-')[0] + '-toggle';
+            const toggleBtn = document.getElementById(toggleBtnId);
+            if (toggleBtn) toggleBtn.style.display = 'inline-flex';
+            
+            // Change Run button text to Refresh
+            const runBtnId = 'btn-' + id.split('-')[0] + '-run';
+            const runBtn = document.getElementById(runBtnId);
+            if (runBtn) {
+                runBtn.innerHTML = runBtn.innerHTML.replace('Load', 'Refresh').replace('Fetch', 'Refresh').replace('Run', 'Refresh');
+            }
+        }
+
+        async function loadCustomers() {
+            showSection('customers-data-wrapper');
+            const tbody = document.getElementById('customer-table-body');
+            tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; padding: 2rem;">Syncing with database...</td></tr>`;
+            try {
+                const res = await fetch('/api/admin/customers', { headers: { 'Authorization': 'Bearer ' + token } });
+                const result = await res.json();
+                if (result.success) {
+                    tbody.innerHTML = result.data.map(c => `
+                        <tr id="customer-row-${c.customerId}">
+                            <td class="name-cell">${c.fullName}</td>
+                            <td>${c.email}</td>
+                            <td class="phone-cell">${c.phone || 'N/A'}</td>
+                            <td><span class="status-badge status-${c.isVerified ? 'approved' : 'pending'}">${c.isVerified ? 'VERIFIED' : 'UNVERIFIED'}</span></td>
+                            <td class="action-cell">
+                                <div style="display: flex; gap: 0.3rem;">
+                                    <button class="action-btn approve-btn" onclick="startEditCustomer(${c.customerId}, '${c.fullName}', '${c.phone || ''}')">Update</button>
+                                    <button class="action-btn reject-btn" onclick="deleteCustomer(${c.customerId})">Delete</button>
+                                </div>
+                            </td>
+                        </tr>
+                    `).join('');
+                } else {
+                    tbody.innerHTML = `<tr><td colspan="5" style="text-align: center;">${result.message}</td></tr>`;
+                }
+            } catch (err) { console.error(err); }
+        }
+
+        async function deleteCustomer(id) {
+            if (!confirm('Are you absolutely sure you want to permanently delete this customer?')) return;
+            try {
+                const res = await fetch(`/api/admin/customers/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                if (res.ok) {
+                    alert('Customer deleted successfully.');
+                    loadCustomers();
+                } else {
+                    alert('Failed to delete customer.');
+                }
+            } catch(e) { alert('Connection Error'); }
+        }
+
+        async function createCustomer(e) {
+            e.preventDefault();
+            const btn = e.target.querySelector('button');
+            const originalText = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = 'Processing...';
+
+            const payload = {
+                fullName: document.getElementById('cust-name').value,
+                email: document.getElementById('cust-email').value,
+                password: document.getElementById('cust-pass').value,
+                phone: ""
+            };
+            try {
+                const res = await fetch('/api/admin/customers', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + token
+                    },
+                    body: JSON.stringify(payload)
+                });
+                const result = await res.json();
+                if (res.ok && result.success !== false) {
+                    alert('Success: ' + (result.message || 'Customer account created!'));
+                    document.getElementById('create-customer-form').reset();
+                    refreshTaskHub();
+                    loadCustomers();
+                } else {
+                    alert('Error: ' + (result.message || result.error || 'Failed to create customer'));
+                }
+            } catch (err) { alert('Connection Error: System unreachable.'); }
+            finally { btn.disabled = false; btn.textContent = originalText; }
+        }
+
+        function logout() {
+            if(!confirm('Are you sure you want to end your administrative session?')) return;
+            localStorage.clear(); 
+            window.location.href='/login.html';
+        }
+
+        // --- THEME LOGIC ---
+        function toggleTheme() {
+            const body = document.body;
+            body.classList.toggle('light-mode');
+            const isLight = body.classList.contains('light-mode');
+            localStorage.setItem('kora_theme', isLight ? 'light' : 'dark');
+        }
+
+        (function initTheme() {
+            const savedTheme = localStorage.getItem('kora_theme');
+            if (savedTheme === 'light') {
+                document.body.classList.add('light-mode');
+            }
+        })();
+
+
+        async function deleteCooperative(id) {
+            if (!confirm('Are you sure you want to remove this collective?')) return;
+            const res = await fetch(`/api/cooperatives/${id}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+            if (res.ok) {
+                alert('Collective removed');
+                loadCooperatives();
+            }
+        }
+
+        async function createCooperative(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btn-coop-submit');
+            btn.disabled = true;
+            btn.textContent = 'Registering...';
+
+            const payload = {
+                name: document.getElementById('coop-name').value,
+                province: document.getElementById('coop-province').value,
+                district: 'N/A', // Defaulting district since it's not in the form but likely required by DTO
+                contactPhone: document.getElementById('coop-phone').value
+            };
+            try {
+                const res = await fetch('/api/cooperatives', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json', 
+                        'Authorization': 'Bearer ' + token 
+                    },
+                    body: JSON.stringify(payload)
+                });
+                const result = await res.json();
+                if (res.ok && result.success !== false) {
+                    alert('Success: Collective Registered!');
+                    document.getElementById('coop-form').reset();
+                    refreshTaskHub();
+                    loadCooperatives();
+                } else {
+                    alert('Error: ' + (result.message || result.error || 'Failed to register collective.'));
+                }
+            } catch (err) { 
+                console.error(err);
+                alert('Fetch Error: Check system connectivity.'); 
+            }
+            finally { btn.disabled = false; btn.textContent = 'Register Collective'; }
+        }
+
+        async function loadStats() {
+            showSection('stats-container');
+            document.getElementById('stats-container').innerHTML = `
+                <div class="stat-card"><h4>Analyzing...</h4><div class="stat-value">⏳</div></div>
+                <div class="stat-card"><h4>Analyzing...</h4><div class="stat-value">⏳</div></div>
+                <div class="stat-card"><h4>Analyzing...</h4><div class="stat-value">⏳</div></div>
+                <div class="stat-card"><h4>Analyzing...</h4><div class="stat-value">⏳</div></div>
+            `;
+            try {
+                const res = await fetch('/api/admin/dashboard/stats', { headers: { 'Authorization': 'Bearer ' + token } });
+                const result = await res.json();
+                if (result.success) {
+                    const s = result.data;
+                    document.getElementById('stats-container').innerHTML = `
+                         <div class="stat-card"><h4>Artisans</h4><div class="stat-value">${s.totalArtisans}</div></div>
+                         <div class="stat-card"><h4>Cooperatives</h4><div class="stat-value">${s.totalCooperatives}</div></div>
+                         <div class="stat-card"><h4>Products</h4><div class="stat-value">${s.totalProducts}</div></div>
+                         <div class="stat-card"><h4>Platform Revenue</h4><div class="stat-value">RWF ${s.totalRevenue.toLocaleString()}</div></div>
+                    `;
+                    document.getElementById('stats-placeholder').style.display = 'none';
+                } else {
+                    throw new Error(result.message || 'Server error');
+                }
+            } catch (err) { 
+                document.getElementById('stats-container').innerHTML = `
+                    <div class="stat-card" style="border-color: #ef4444;"><h4 style="color: #ef4444;">Error</h4><div class="stat-value" style="font-size: 1rem; color: #ef4444;">Failed to load data</div></div>
+                `;
+                console.error(err); 
+            }
+        }
+
+        async function loadArtisans() {
+            showSection('artisans-data-wrapper');
+            const tbody = document.getElementById('artisan-table-body');
+            tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; padding: 2rem;">Loading verification queue...</td></tr>`;
+            try {
+                const res = await fetch('/api/admin/artisans', { headers: { 'Authorization': 'Bearer ' + token } });
+                const result = await res.json();
+                if (result.success) {
+                    tbody.innerHTML = result.data.map(a => `
+                        <tr id="artisan-row-${a.artisanId}">
+                            <td class="name-cell">${a.fullName}</td>
+                            <td class="location-cell">${a.districtVillage || 'N/A'}</td>
+                            <td>${a.email}</td>
+                            <td><span class="status-badge status-${a.verificationStatus.toLowerCase()}">${a.verificationStatus}</span></td>
+                            <td class="action-cell">
+                                <div style="display: flex; gap: 0.3rem;">
+                                    <button class="action-btn approve-btn" onclick="startEditArtisan(${a.artisanId}, '${a.fullName}', '${a.districtVillage || ''}')">Update</button>
+                                    ${a.verificationStatus === 'PENDING' ? `
+                                        <button class="action-btn approve-btn" style="background:var(--success)" onclick="verifyArtisan(${a.artisanId}, 'APPROVED')">Approve</button>
+                                        <button class="action-btn reject-btn" onclick="verifyArtisan(${a.artisanId}, 'REJECTED')">Reject</button>
+                                    ` : ''}
+                                    <button class="action-btn reject-btn" style="background:rgba(239, 68, 68, 0.1); border-color:rgba(239, 68, 68, 0.2);" onclick="deleteArtisan(${a.artisanId})">Delete</button>
+                                </div>
+                            </td>
+                        </tr>
+                    `).join('');
+                }
+            } catch (err) { console.error(err); }
+        }
+
+        async function loadCooperatives() {
+            showSection('cooperatives-data-container');
+            const tbody = document.getElementById('cooperative-table-body');
+            tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; padding: 2rem;">Fetching collectives...</td></tr>`;
+            try {
+                const res = await fetch('/api/admin/cooperatives', { headers: { 'Authorization': 'Bearer ' + token } });
+                const result = await res.json();
+                if (result.success) {
+                    tbody.innerHTML = result.data.map(c => `
+                        <tr id="coop-row-${c.cooperativeId}">
+                            <td class="name-cell">${c.name}</td>
+                            <td class="province-cell">${c.province}</td>
+                            <td class="district-cell">${c.district}</td>
+                            <td class="phone-cell">${c.contactPhone}</td>
+                            <td><span class="status-badge status-${(c.verificationStatus || 'pending').toLowerCase()}">${c.verificationStatus}</span></td>
+                            <td class="action-cell">
+                                <div style="display: flex; gap: 0.3rem;">
+                                    <button class="action-btn approve-btn" onclick="startEditCoop(${c.cooperativeId}, '${c.name}', '${c.province}', '${c.district}', '${c.contactPhone}', '${c.verificationStatus}')">Update</button>
+                                    <button class="action-btn reject-btn" onclick="deleteCooperative(${c.cooperativeId})">Delete</button>
+                                </div>
+                            </td>
+                        </tr>
+                    `).join('');
+                }
+            } catch (err) { console.error(err); }
+        }
+
+        async function loadProducts() {
+            showSection('products-data-wrapper');
+            const tbody = document.getElementById('product-table-body');
+            tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; padding: 2rem;">Fetching inventory...</td></tr>`;
+            try {
+                const res = await fetch('/api/admin/products', { headers: { 'Authorization': 'Bearer ' + token } });
+                const result = await res.json();
+                if (result.success) {
+                    tbody.innerHTML = result.data.map(p => `
+                        <tr id="product-row-${p.productId}">
+                            <td class="name-cell">${p.name}</td>
+                            <td>${p.artisanName}</td>
+                            <td class="category-cell">${p.category}</td>
+                            <td class="price-cell">RWF ${p.price.toLocaleString()}</td>
+                            <td class="status-cell"><span class="status-badge status-${(p.status || 'flagged').toLowerCase()}">${p.status || 'FLAGGED'}</span></td>
+                            <td class="action-cell">
+                                <div style="display: flex; gap: 0.3rem;">
+                                    <button class="action-btn approve-btn" onclick="startEditProduct(${p.productId}, '${p.name}', '${p.category}', ${p.price}, '${p.status}')">Update</button>
+                                    <button class="action-btn reject-btn" onclick="deleteProduct(${p.productId})">Delete</button>
+                                </div>
+                            </td>
+                        </tr>
+                    `).join('');
+                }
+            } catch (err) { console.error(err); }
+        }
+
+        async function loadOrders() {
+            showSection('orders-data-wrapper');
+            const tbody = document.getElementById('order-table-body');
+            tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; padding: 2rem;">Retrieving orders...</td></tr>`;
+            try {
+                const res = await fetch('/api/admin/orders', { headers: { 'Authorization': 'Bearer ' + token } });
+                const result = await res.json();
+                if (result.success) {
+                    tbody.innerHTML = result.data.map(o => `
+                        <tr>
+                            <td>#${o.orderId}</td>
+                            <td>${o.customerName}</td>
+                            <td style="font-weight:700">RWF ${o.totalAmount.toLocaleString()}</td>
+                            <td><span class="status-badge status-${(o.orderStatus || '').toLowerCase()}">${o.orderStatus}</span></td>
+                            <td>${new Date(o.orderDate).toLocaleDateString()}</td>
+                            <td>
+                                <div style="display: flex; gap: 0.3rem; align-items: center;">
+                                    <select onchange="updateOrderStatus(${o.orderId}, this.value)" style="background:var(--glass); color:white; border:1px solid var(--border); padding:0.3rem; border-radius:5px; cursor:pointer;">
+                                        <option value="" disabled selected>Update</option>
+                                        <option value="PENDING">PENDING</option>
+                                        <option value="PROCESSING">PROCESSING</option>
+                                        <option value="SHIPPED">SHIPPED</option>
+                                        <option value="DELIVERED">DELIVERED</option>
+                                        <option value="CANCELLED">CANCELLED</option>
+                                    </select>
+                                    <button class="action-btn reject-btn" style="padding:0.3rem 0.6rem;" onclick="deleteOrder(${o.orderId})">Delete</button>
+                                </div>
+                            </td>
+                        </tr>
+                    `).join('');
+                }
+            } catch (err) { console.error(err); }
+        }
+
+        async function loadPayments() {
+            showSection('payments-data-wrapper');
+            const tbody = document.getElementById('payment-table-body');
+            tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; padding: 2rem;">Syncing financial logs...</td></tr>`;
+            try {
+                const res = await fetch('/api/admin/payments', { headers: { 'Authorization': 'Bearer ' + token } });
+                const result = await res.json();
+                if (result.success) {
+                    tbody.innerHTML = result.data.map(p => `
+                        <tr>
+                            <td>#TRANS-${p.paymentId}</td>
+                            <td>#ORD-${p.orderId}</td>
+                            <td>${p.paymentMethod}</td>
+                            <td>${p.transactionRef || 'N/A'}</td>
+                            <td><span class="status-badge status-${(p.paymentStatus || '').toLowerCase()}">${p.paymentStatus}</span></td>
+                            <td>
+                                <button class="action-btn reject-btn" style="padding:0.3rem 0.6rem;" onclick="deletePayment(${p.paymentId})">Delete</button>
+                            </td>
+                        </tr>
+                    `).join('');
+                }
+            } catch (err) { console.error(err); }
+        }
+
+        async function verifyArtisan(id, status) {
+            const res = await fetch(`/api/admin/artisans/${id}/verify?status=${status}`, {
+                method: 'PATCH',
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+            if (res.ok) {
+                loadArtisans();
+                refreshTaskHub();
+            }
+        }
+
+        async function deleteArtisan(id) {
+            if(!confirm('Permanently purge this artisan record?')) return;
+            const res = await fetch(`/api/admin/artisans/${id}`, { method: 'DELETE', headers: { 'Authorization': 'Bearer ' + token } });
+            if(res.ok) { alert('Artisan purged'); loadArtisans(); }
+        }
+
+        async function deleteOrder(id) {
+            if(!confirm('Delete this order record permanently?')) return;
+            const res = await fetch(`/api/admin/orders/${id}`, { method: 'DELETE', headers: { 'Authorization': 'Bearer ' + token } });
+            if(res.ok) { alert('Order record deleted'); loadOrders(); }
+        }
+
+        async function deletePayment(id) {
+            if(!confirm('Delete this payment transaction record?')) return;
+            const res = await fetch(`/api/admin/payments/${id}`, { method: 'DELETE', headers: { 'Authorization': 'Bearer ' + token } });
+            if(res.ok) { alert('Payment record deleted'); loadPayments(); }
+        }
+
+        async function deleteProduct(id) {
+            if (!confirm('Flag this product for removal?')) return;
+            const res = await fetch(`/api/admin/products/${id}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+            if (res.ok) loadProducts();
+        }
+
+        function logout() { localStorage.clear(); window.location.href = '/login.html'; }
+
+        // --- SECURITY & ADMIN SETTINGS LOGIC ---
+        async function updateAdminPassword(e) {
+            e.preventDefault();
+            const currentPass = document.getElementById('admin-current-pass').value;
+            const newPass = document.getElementById('admin-new-pass').value;
+            const confirmPass = document.getElementById('admin-confirm-pass').value;
+
+            if (newPass !== confirmPass) {
+                alert('New passwords do not match!');
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/auth/update-password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                    body: JSON.stringify({ email: user.email, currentPassword: currentPass, newPassword: newPass, role: 'ADMIN' })
+                });
+                const data = await res.json();
+                if (res.ok && data.success) {
+                    alert('Admin Password updated securely.');
+                    document.getElementById('admin-security-form').reset();
+                } else {
+                    alert(data.message || 'Error updating password.');
+                }
+            } catch (err) { alert('Connection error.'); }
+        }
+
+        async function createAdminUser(e) {
+            e.preventDefault();
+            const btn = e.target.querySelector('button');
+            const originalText = btn.textContent;
+            
+            const payload = {
+                fullName: document.getElementById('new-admin-name').value,
+                email: document.getElementById('new-admin-email').value,
+                password: document.getElementById('new-admin-pass').value
+            };
+
+            if(!confirm('Are you assigning Root level system access to this user?')) return;
+            
+            btn.disabled = true;
+            btn.textContent = 'Authorizing...';
+
+            try {
+                const res = await fetch('/api/admin/create', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + token 
+                    },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                if (res.ok && data.success) {
+                    alert('New System Administrator successfully authorized!');
+                    document.getElementById('create-admin-form').reset();
+                    // Refresh the list if it's visible
+                    if (document.getElementById('admins-data-wrapper').style.display !== 'none') loadAdmins();
+                } else {
+                    alert('Error: ' + (data.message || 'Failed to create admin instance.'));
+                }
+            } catch (err) { alert('Connection error.'); }
+            finally { btn.disabled = false; btn.textContent = originalText; }
+        }
+
+        async function loadAdmins() {
+            showSection('admins-data-wrapper');
+            const tbody = document.getElementById('admin-table-body');
+            tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; padding: 2rem;">Syncing administrator logs...</td></tr>`;
+            try {
+                const res = await fetch('/api/admin/list', { headers: { 'Authorization': 'Bearer ' + token } });
+                const result = await res.json();
+                if (result.success) {
+                    tbody.innerHTML = result.data.map(a => `
+                        <tr>
+                            <td style="font-weight:600">${a.fullName} ${a.email === user.email ? '<span style="color:var(--primary); font-size:0.7rem;">(YOU)</span>' : ''}</td>
+                            <td>${a.email}</td>
+                            <td><span class="status-badge status-approved">${a.role}</span></td>
+                            <td>${new Date(a.createdAt).toLocaleDateString()}</td>
+                        </tr>
+                    `).join('');
+                } else {
+                    tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #ef4444;">${result.message}</td></tr>`;
+                }
+            } catch (err) { 
+                console.error(err);
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #ef4444;">Connection failed</td></tr>`;
+            }
+        }
+
+        // Initialize Dashboard
+        refreshTaskHub();
+    </script>
+</body>
+</html>

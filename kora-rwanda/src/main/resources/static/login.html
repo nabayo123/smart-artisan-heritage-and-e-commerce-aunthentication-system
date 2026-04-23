@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | Kora-Rwanda</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #d4a373;
+            --primary-dark: #bc8a5f;
+            --dark: #121212;
+            --dark2: #1c1c1c;
+            --glass: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --success: #4ade80;
+            --error: #f87171;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
+        body { background: var(--dark); color: white; min-height: 100vh; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+
+        /* Animated Background */
+        .bg-glow { position: fixed; width: 100vw; height: 100vh; background: radial-gradient(circle at 50% 50%, #1a1a2e 0%, #121212 100%); z-index: -2; }
+        .bg-blob { position: fixed; width: 600px; height: 600px; background: var(--primary); filter: blur(160px); opacity: 0.12; border-radius: 50%; z-index: -1; animation: move 25s infinite alternate; }
+        @keyframes move { from { transform: translate(-30%, -30%); } to { transform: translate(30%, 30%); } }
+
+        .login-card {
+            width: 100%;
+            max-width: 420px;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(20px);
+            padding: 3rem;
+            border-radius: 32px;
+            box-shadow: 0 24px 80px rgba(0,0,0,0.5);
+            animation: fadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(40px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .brand {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--primary);
+            text-align: center;
+            margin-bottom: 2rem;
+            letter-spacing: -0.5px;
+        }
+
+        h1 { font-size: 2rem; font-weight: 800; margin-bottom: 0.5rem; text-align: center; }
+        p.subtitle { color: rgba(255,255,255,0.45); text-align: center; margin-bottom: 2.5rem; font-size: 0.95rem; }
+
+        .input-group { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1.5rem; }
+        .input-group label { font-size: 0.85rem; color: rgba(255,255,255,0.6); font-weight: 500; padding-left: 0.5rem; }
+        .input-group input {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--glass-border);
+            padding: 1rem 1.25rem;
+            border-radius: 16px;
+            color: white;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+        .input-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: rgba(212, 163, 115, 0.05);
+            box-shadow: 0 0 0 4px rgba(212,163,115,0.1);
+        }
+
+        .btn-login {
+            width: 100%;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: #121212;
+            padding: 1.1rem;
+            border-radius: 16px;
+            border: none;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 1rem;
+        }
+        .btn-login:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(212,163,115,0.3); }
+        .btn-login:active { transform: translateY(0); }
+        .btn-login:disabled { opacity: 0.7; cursor: not-allowed; }
+
+        .notify {
+            padding: 1rem;
+            border-radius: 14px;
+            font-size: 0.9rem;
+            margin-bottom: 1.5rem;
+            display: none;
+            text-align: center;
+        }
+        .notify.show { display: block; }
+        .notify.error { background: rgba(248, 113, 113, 0.1); border: 1px solid rgba(248, 113, 113, 0.2); color: var(--error); }
+
+        .footer-links { text-align: center; margin-top: 2rem; font-size: 0.9rem; color: rgba(255,255,255,0.4); }
+        .footer-links a { color: var(--primary); text-decoration: none; font-weight: 600; }
+        .footer-links a:hover { text-decoration: underline; }
+
+        .back-link { position: absolute; top: 2rem; left: 2rem; color: rgba(255,255,255,0.4); text-decoration: none; font-size: 0.9rem; transition: color 0.3s; }
+        .back-link:hover { color: white; }
+    </style>
+</head>
+<body>
+    <div class="bg-glow"></div>
+    <div class="bg-blob"></div>
+
+    <a href="/" class="back-link">← Back to home</a>
+
+    <div class="login-card">
+        <div class="brand">KORA.RWANDA</div>
+        <h1>Welcome Back</h1>
+        <p class="subtitle">Enter your credentials to access your heritage dashboard.</p>
+
+        <div id="notify" class="notify"></div>
+
+        <form id="login-form" onsubmit="handleLogin(event)">
+            <div class="input-group">
+                <label>Login As</label>
+                <select id="role" required style="background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); padding: 1rem 1.25rem; border-radius: 16px; color: white; font-size: 1rem; cursor: pointer; appearance: none;">
+                    <option value="CUSTOMER" style="background:#121212">Customer</option>
+                    <option value="ARTISAN" style="background:#121212">Artisan</option>
+                    <option value="ADMIN" style="background:#121212">Administrator</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label>Email Address</label>
+                <input type="email" id="email" placeholder="email@example.com" required>
+            </div>
+            <div class="input-group">
+                <label>Password</label>
+                <input type="password" id="password" placeholder="••••••••" required>
+            </div>
+            <button type="submit" class="btn-login" id="login-btn">Secure Login</button>
+        </form>
+
+        <div class="footer-links">
+            Don't have an account? <a href="/register.html">Sign Up</a>
+        </div>
+    </div>
+
+    <script>
+        async function handleLogin(e) {
+            e.preventDefault();
+            const btn = document.getElementById('login-btn');
+            const notify = document.getElementById('notify');
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const roleSelection = document.getElementById('role').value;
+
+            btn.disabled = true;
+            btn.textContent = 'Authenticating...';
+            notify.classList.remove('show', 'error');
+
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password, role: roleSelection })
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    const { token, role, email: userEmail, fullName, userId } = result.data;
+                    
+                    // Store session data
+                    localStorage.setItem('kora_token', token);
+                    localStorage.setItem('kora_user', JSON.stringify({ token, role, email: userEmail, fullName, userId }));
+
+                    // Redirect based on role
+                    // Roles are usually ROLE_ADMIN, ROLE_ARTISAN, ROLE_CUSTOMER
+                    redirectByRole(role);
+                } else {
+                    const errMsg = result.message || 'Invalid email or password.';
+                    notify.textContent = errMsg;
+                    notify.classList.add('show', 'error');
+
+                    // If account exists but not verified, redirect to verify page
+                    if (errMsg.toLowerCase().includes('not verified')) {
+                        setTimeout(() => {
+                            const userRole = roleSelection.toLowerCase();
+                            window.location.href = `/verify.html?email=${encodeURIComponent(email)}&role=${userRole}`;
+                        }, 2000);
+                    }
+                }
+            } catch (error) {
+                notify.textContent = 'Network error. Please try again later.';
+                notify.classList.add('show', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Secure Login';
+            }
+        }
+
+        function redirectByRole(role) {
+            switch(role) {
+                case 'ROLE_ADMIN':
+                    window.location.href = '/admin-dashboard.html';
+                    break;
+                case 'ROLE_ARTISAN':
+                    window.location.href = '/artisan-dashboard.html';
+                    break;
+                case 'ROLE_CUSTOMER':
+                    window.location.href = '/customer-dashboard.html';
+                    break;
+                default:
+                    window.location.href = '/';
+            }
+        }
+
+    </script>
+</body>
+</html>
