@@ -67,21 +67,28 @@ public class DataSeeder implements CommandLineRunner {
     }
 
     private void seedDefaultAdmin() {
-        String adminEmail = "admin@kora-rwanda.rw";
-        if (!adminRepository.existsByEmail(adminEmail)) {
-            Admin admin = Admin.builder()
-                    .fullName("Kora Rwanda Administrator")
-                    .email(adminEmail)
-                    .password(passwordEncoder.encode("Admin@2024"))
-                    .role(UserRole.ROLE_ADMIN)
-                    .build();
-            adminRepository.save(admin);
-            log.info("DEFAULT ADMIN ACCOUNT CREATED: " + adminEmail);
-        } else {
-            Admin admin = adminRepository.findByEmail(adminEmail).get();
-            admin.setPassword(passwordEncoder.encode("Admin@2024"));
-            adminRepository.save(admin);
-            log.info("Admin account already exists - forced password reset to Admin@2024 for testing.");
+        String[] adminEmails = {"admin@kora-rwanda.rw", "nabayoclementine@gmail.com"};
+        
+        for (String email : adminEmails) {
+            if (!adminRepository.existsByEmail(email)) {
+                Admin admin = Admin.builder()
+                        .fullName("Kora Rwanda Administrator")
+                        .email(email)
+                        .password(passwordEncoder.encode("Admin@2024"))
+                        .role(UserRole.ROLE_ADMIN)
+                        .active(true)
+                        .isVerified(true)
+                        .build();
+                adminRepository.save(admin);
+                log.info("ADMIN ACCOUNT CREATED: " + email);
+            } else {
+                Admin admin = adminRepository.findByEmail(email).get();
+                admin.setPassword(passwordEncoder.encode("Admin@2024"));
+                admin.setActive(true);
+                admin.setVerified(true);
+                adminRepository.save(admin);
+                log.info("Admin password reset for testing: " + email);
+            }
         }
     }
     private void seedDefaultArtisan() {
