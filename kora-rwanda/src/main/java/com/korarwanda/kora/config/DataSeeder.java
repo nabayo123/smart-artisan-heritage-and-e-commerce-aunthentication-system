@@ -86,7 +86,7 @@ public class DataSeeder implements CommandLineRunner {
     }
     private void seedDefaultArtisan() {
         String email = "artisan@test.rw";
-        if (artisanRepository.count() == 0 && !artisanRepository.existsByEmail(email)) {
+        if (!artisanRepository.existsByEmail(email)) {
             com.korarwanda.kora.entity.Artisan a = com.korarwanda.kora.entity.Artisan.builder()
                 .fullName("Uwimana Marie")
                 .email(email)
@@ -98,12 +98,19 @@ public class DataSeeder implements CommandLineRunner {
                 .build();
             artisanRepository.save(a);
             log.info("Default Artisan created: {} / Test@123", email);
+        } else {
+            com.korarwanda.kora.entity.Artisan a = artisanRepository.findByEmail(email).get();
+            a.setPassword(passwordEncoder.encode("Test@123"));
+            a.setVerificationStatus(VerificationStatus.APPROVED);
+            a.setVerified(true);
+            artisanRepository.save(a);
+            log.info("Default Artisan password forced reset for testing: {}", email);
         }
     }
 
     private void seedDefaultCustomer() {
         String email = "customer@test.rw";
-        if (customerRepository.count() == 0 && !customerRepository.existsByEmail(email)) {
+        if (!customerRepository.existsByEmail(email)) {
             com.korarwanda.kora.entity.Customer c = com.korarwanda.kora.entity.Customer.builder()
                 .fullName("Buyer John")
                 .email(email)
@@ -114,6 +121,12 @@ public class DataSeeder implements CommandLineRunner {
                 .build();
             customerRepository.save(c);
             log.info("Default Customer created: {} / Test@123", email);
+        } else {
+            com.korarwanda.kora.entity.Customer c = customerRepository.findByEmail(email).get();
+            c.setPassword(passwordEncoder.encode("Test@123"));
+            c.setVerified(true);
+            customerRepository.save(c);
+            log.info("Default Customer password forced reset for testing: {}", email);
         }
     }
 }

@@ -61,27 +61,24 @@ public class AuthServiceImpl implements AuthService {
         SecurityContextHolder.getContext().setAuthentication(authentication);
         String jwt = jwtUtils.generateJwtToken(authentication);
 
-        String role = request.getRole().toUpperCase();
-        return switch (role) {
-            case "ARTISAN" -> {
-                Artisan a = artisanRepository.findByEmail(request.getEmail())
-                        .orElseThrow(() -> new BadRequestException("This account is not registered as an Artisan."));
-                if (!a.isVerified()) throw new BadRequestException("Account not verified. Please use your verification code.");
-                yield new AuthDto.LoginResponse(jwt, a.getEmail(), a.getFullName(), a.getRole(), a.getArtisanId());
-            }
-            case "CUSTOMER" -> {
-                Customer c = customerRepository.findByEmail(request.getEmail())
-                        .orElseThrow(() -> new BadRequestException("This account is not registered as a Customer."));
-                if (!c.isVerified()) throw new BadRequestException("Account not verified. Please use your verification code.");
-                yield new AuthDto.LoginResponse(jwt, c.getEmail(), c.getFullName(), c.getRole(), c.getCustomerId());
-            }
-            case "ADMIN" -> {
-                Admin adm = adminRepository.findByEmail(request.getEmail())
-                        .orElseThrow(() -> new BadRequestException("This account is not registered as an Admin."));
-                yield new AuthDto.LoginResponse(jwt, adm.getEmail(), adm.getFullName(), adm.getRole(), adm.getAdminId());
-            }
-            default -> throw new BadRequestException("Invalid role selected.");
-        };
+        String email = request.getEmail();
+        String selectedRole = request.getRole().toUpperCase();
+
+        // 1. Try to find the user in any table to determine their actual role
+        if (adminRepository.existsByEmail(email)) {
+            Admin adm = adminRepository.findByEmail(email).get();
+            return new AuthDto.LoginResponse(jwt, adm.getEmail(), adm.getFullName(), adm.getRole(), adm.getAdminId());
+        } else if (artisanRepository.existsByEmail(email)) {
+            Artisan a = artisanRepository.findByEmail(email).get();
+            if (!a.isVerified()) throw new BadRequestException("Artisan account not verified.");
+            return new AuthDto.LoginResponse(jwt, a.getEmail(), a.getFullName(), a.getRole(), a.getArtisanId());
+        } else if (customerRepository.existsByEmail(email)) {
+            Customer c = customerRepository.findByEmail(email).get();
+            if (!c.isVerified()) throw new BadRequestException("Customer account not verified.");
+            return new AuthDto.LoginResponse(jwt, c.getEmail(), c.getFullName(), c.getRole(), c.getCustomerId());
+        }
+
+        throw new BadRequestException("User not found with email: " + email);
     }
 
     @Override
@@ -112,7 +109,13 @@ public class AuthServiceImpl implements AuthService {
 
         artisan = artisanRepository.save(artisan);
 
-        return new AuthDto.LoginResponse(null, artisan.getEmail(), artisan.getFullName(),
+        // Auto-login: Generate token immediately
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        String token = jwtUtils.generateJwtToken(authentication);
+
+        return new AuthDto.LoginResponse(token, artisan.getEmail(), artisan.getFullName(),
                 artisan.getRole(), artisan.getArtisanId());
     }
 
@@ -134,7 +137,13 @@ public class AuthServiceImpl implements AuthService {
 
         customer = customerRepository.save(customer);
 
-        return new AuthDto.LoginResponse(null, customer.getEmail(), customer.getFullName(),
+        // Auto-login: Generate token immediately
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        String token = jwtUtils.generateJwtToken(authentication);
+
+        return new AuthDto.LoginResponse(token, customer.getEmail(), customer.getFullName(),
                 customer.getRole(), customer.getCustomerId());
     }
 
@@ -162,7 +171,13 @@ public class AuthServiceImpl implements AuthService {
 
         admin = adminRepository.save(admin);
 
-        return new AuthDto.LoginResponse(null, admin.getEmail(), admin.getFullName(),
+        // Auto-login: Generate token immediately
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        String token = jwtUtils.generateJwtToken(authentication);
+
+        return new AuthDto.LoginResponse(token, admin.getEmail(), admin.getFullName(),
                 admin.getRole(), admin.getAdminId());
     }
 

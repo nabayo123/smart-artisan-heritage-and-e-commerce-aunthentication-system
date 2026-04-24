@@ -500,20 +500,24 @@
                     showNotify('success', 'Account created successfully! Welcome to Kora-Rwanda 🎉');
                     form.reset();
 
-                    // Save token if returned for Admins, otherwise redirect to verify
+                    // Save token and auto-login if returned
                     if (result.data && result.data.token) {
                         const { token, role, email, fullName, userId } = result.data;
                         localStorage.setItem('kora_token', token);
                         localStorage.setItem('kora_user', JSON.stringify({ token, role, email, fullName, userId }));
-                        setTimeout(() => { window.location.href = '/admin-dashboard.html'; }, 2000);
+                        
+                        // Redirect based on role
+                        setTimeout(() => {
+                            if (role === 'ROLE_ADMIN') window.location.href = '/admin-dashboard.html';
+                            else if (role === 'ROLE_ARTISAN') window.location.href = '/artisan-dashboard.html';
+                            else window.location.href = '/customer-dashboard.html';
+                        }, 2000);
                     } else if (result.data) {
-                        // User needs to verify email
+                        // Fallback: if no token (should not happen now), go to verify
                         setTimeout(() => {
                             const userRole = (role === 'artisan' || role === 'ROLE_ARTISAN') ? 'artisan' : 'customer';
                             window.location.href = `/verify.html?email=${encodeURIComponent(result.data.email)}&role=${userRole}`;
                         }, 2000);
-                    } else {
-                        setTimeout(() => { window.location.href = '/login.html'; }, 2000);
                     }
 
                 } else {
