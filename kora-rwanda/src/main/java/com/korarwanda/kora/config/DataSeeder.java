@@ -70,9 +70,10 @@ public class DataSeeder implements CommandLineRunner {
         String[] adminEmails = {"admin@kora-rwanda.rw", "nabayoclementine@gmail.com"};
         
         for (String email : adminEmails) {
+            String name = email.equals("nabayoclementine@gmail.com") ? "Nabayo Clementine" : "Kora Rwanda Administrator";
             if (!adminRepository.existsByEmail(email)) {
                 Admin admin = Admin.builder()
-                        .fullName("Kora Rwanda Administrator")
+                        .fullName(name)
                         .email(email)
                         .password(passwordEncoder.encode("Admin@2024"))
                         .role(UserRole.ROLE_ADMIN)
@@ -83,11 +84,12 @@ public class DataSeeder implements CommandLineRunner {
                 log.info("ADMIN ACCOUNT CREATED: " + email);
             } else {
                 Admin admin = adminRepository.findByEmail(email).get();
+                admin.setFullName(name);
                 admin.setPassword(passwordEncoder.encode("Admin@2024"));
                 admin.setActive(true);
                 admin.setVerified(true);
                 adminRepository.save(admin);
-                log.info("Admin password reset for testing: " + email);
+                log.info("Admin profile updated for: " + email);
             }
         }
     }
