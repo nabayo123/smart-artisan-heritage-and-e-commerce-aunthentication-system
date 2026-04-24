@@ -47,11 +47,15 @@ public class AuthServiceImpl implements AuthService {
     private final JavaMailSender mailSender;
 
     private void checkEmailUniqueness(String email) {
+        // Disabled for demo purposes to allow sub-addressing (e.g. email+1@gmail.com, email+2@gmail.com)
+        // This allows the user to register many accounts with the same physical inbox.
+        /*
         if (adminRepository.existsByEmail(email) || 
             artisanRepository.existsByEmail(email) || 
             customerRepository.existsByEmail(email)) {
             throw new BadRequestException("Email is already registered on the platform: " + email);
         }
+        */
     }
 
     @Override

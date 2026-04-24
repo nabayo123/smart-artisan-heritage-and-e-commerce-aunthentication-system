@@ -21,7 +21,7 @@ public class Artisan {
     @Column(nullable = false, length = 150)
     private String fullName;
 
-    @Column(unique = true, length = 150)
+    @Column(length = 150)
     private String email;
 
     @com.fasterxml.jackson.annotation.JsonIgnore

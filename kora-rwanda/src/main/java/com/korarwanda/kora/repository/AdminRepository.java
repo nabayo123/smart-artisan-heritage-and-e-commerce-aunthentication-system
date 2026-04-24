@@ -10,11 +10,20 @@ import java.util.Optional;
 @Repository
 public interface AdminRepository extends JpaRepository<Admin, Long> {
 
-    Optional<Admin> findByEmail(String email);
+    Optional<Admin> findFirstByEmailOrderByCreatedAtDesc(String email);
+    
+    default Optional<Admin> findByEmail(String email) {
+        return findFirstByEmailOrderByCreatedAtDesc(email);
+    }
+    
     boolean existsByEmail(String email);
 
     // ── Active-only queries (for login & listing) ──────────────────────
-    Optional<Admin> findByEmailAndActiveTrue(String email);
+    Optional<Admin> findFirstByEmailAndActiveTrueOrderByCreatedAtDesc(String email);
+    
+    default Optional<Admin> findByEmailAndActiveTrue(String email) {
+        return findFirstByEmailAndActiveTrueOrderByCreatedAtDesc(email);
+    }
     List<Admin> findAllByActiveTrue();
     long countByActiveTrue();
 

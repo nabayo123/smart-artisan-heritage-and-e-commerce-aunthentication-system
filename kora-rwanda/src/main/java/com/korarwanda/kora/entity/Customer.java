@@ -20,7 +20,7 @@ public class Customer {
     @Column(nullable = false, length = 150)
     private String fullName;
 
-    @Column(unique = true, nullable = false, length = 150)
+    @Column(nullable = false, length = 150)
     private String email;
 
     @com.fasterxml.jackson.annotation.JsonIgnore

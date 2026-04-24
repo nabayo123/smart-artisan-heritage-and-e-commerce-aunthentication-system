@@ -10,7 +10,12 @@ import java.util.Optional;
 
 @Repository
 public interface ArtisanRepository extends JpaRepository<Artisan, Long> {
-    Optional<Artisan> findByEmail(String email);
+    Optional<Artisan> findFirstByEmailOrderByCreatedAtDesc(String email);
+    
+    default Optional<Artisan> findByEmail(String email) {
+        return findFirstByEmailOrderByCreatedAtDesc(email);
+    }
+    
     boolean existsByEmail(String email);
     List<Artisan> findByVerificationStatus(VerificationStatus status);
     List<Artisan> findByCooperative_CooperativeId(Long cooperativeId);
